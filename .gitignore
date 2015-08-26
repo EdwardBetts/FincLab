@@ -1,2 +1,5 @@
 *.pyc
 __pycache__
+.ropeproject
+.ipynb_checkpoints
+.DS_Store
