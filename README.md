@@ -6,6 +6,7 @@ components:
 
 - Fetching data. Daily stock information in major stock exchanges (U.S.,
   Australia, and China) are downloaded from Yahoo! Finance.
+- Need to do customizable YQL search (rather than relying on pandas-datareader to load stock information, as the industry classification is important (and other stock news data).
 - Back testing. A back-testing platform to explore investment strategies and to
   simulate investment returns using historical data.
 - Real-time trading integration. Real-time trading integration with multiple
