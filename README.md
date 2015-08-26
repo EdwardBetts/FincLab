@@ -3,22 +3,19 @@ Project FincLab
 
 The main purpose of the FincLab project is to backtesting investment strategies on equity data.
 
-*FincLab.py*
-Fetches historical daily stock data of major stock exchanges in U.S., Australia and China using Yahoo! YQL.
+*FincLab.py*: Fetches historical daily stock data of major stock exchanges in U.S., Australia and China using Yahoo! YQL.
 - YQL has the advantage of high customizability, and theoretically can be used to download any data from Yahoo! (e.g. news events related to a company and industry classification). Other tools that utilises CSV api or Charts api cannot achieve this.
 - I can send more frequent YQL queries by appropriately authenticating my requests (up to 100,000 requests per day). Large usage quota is useful to brute force the possible symbols of all stocks in U.S.
 
-*Back-testing*
-A back-testing platform to explore investment strategies and to simulate investment returns using historical data.
+*Back-testing*: A back-testing platform to explore investment strategies and to simulate investment returns using historical data.
 - Each quantitative model is implemented in individual IPython notebooks for visualisation.
 - Markdowns and visuals are removed when an investment strategy is called by FincLab.
 - Back-testing results and portfolio components are summarized and emailed to the end-user.
 
-*Real-time Trading*
-This part is left out to future developement - the real-time trading integration with multiple financial brokers to engage with trading in multiple markets.
+*Real-time Trading*: This part is left out for future developement - the real-time trading integration with multiple financial brokers to engage with trading in multiple markets.
 - Real-time monitor prices of stocks in the portfolio. Send email to / call the end-user if extreme movements occur (e.g. price dropped from the local maximum by 5%).
 
-# To-do list
+## To-do list
 - [ ] To find out the naming rules for stock IDs in China. Use bruteforce to find out all of the IDs, including both listed and unlisted stocks.
 - [ ] For all other stock exchanges, gather their IDs from the Excel sheet available on internet.
 - [ ] Trace number of queries sent every hour and every day. Delay query to the following hour once approached the quota limit.
@@ -30,7 +27,7 @@ This part is left out to future developement - the real-time trading integration
 - [ ] Implement real-time trading by following the strategy.
 - [ ] Seek possible integration with online brokers, such as the Interactive Brokers' API.
 
-# Updates
+## Updates
 26 Aug 2015
 - [X] Change settings file from json to configparser
 
