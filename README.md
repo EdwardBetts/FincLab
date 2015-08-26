@@ -3,16 +3,16 @@ Project FincLab
 
 The main purpose of the FincLab project is to backtesting investment strategies on equity data.
 
-*FincLab.py*: Fetches historical daily stock data of major stock exchanges in U.S., Australia and China using Yahoo! YQL.
+**FincLab.py**: Fetches historical daily stock data of major stock exchanges in U.S., Australia and China using Yahoo! YQL.
 - YQL has the advantage of high customizability, and theoretically can be used to download any data from Yahoo! (e.g. news events related to a company and industry classification). Other tools that utilises CSV api or Charts api cannot achieve this.
 - I can send more frequent YQL queries by appropriately authenticating my requests (up to 100,000 requests per day). Large usage quota is useful to brute force the possible symbols of all stocks in U.S.
 
-*Back-testing*: A back-testing platform to explore investment strategies and to simulate investment returns using historical data.
+**Back-testing**: A back-testing platform to explore investment strategies and to simulate investment returns using historical data.
 - Each quantitative model is implemented in individual IPython notebooks for visualisation.
 - Markdowns and visuals are removed when an investment strategy is called by FincLab.
 - Back-testing results and portfolio components are summarized and emailed to the end-user.
 
-*Real-time Trading*: This part is left out for future developement - the real-time trading integration with multiple financial brokers to engage with trading in multiple markets.
+**Real-time Trading**: This part is left out for future developement - the real-time trading integration with multiple financial brokers to engage with trading in multiple markets.
 - Real-time monitor prices of stocks in the portfolio. Send email to / call the end-user if extreme movements occur (e.g. price dropped from the local maximum by 5%).
 
 ## To-do list
@@ -46,13 +46,12 @@ The main purpose of the FincLab project is to backtesting investment strategies 
 - [X] Get response from YQL URL
 
 22 Aug 2015
-- [X] Use logger to display debug messages.
-    Logging levels:
-        - DEBUG: Detailed information of interests when diagnosing problems.
-        - INFO: Confirmation that things are working as expected.
-        - WARNING: An indication of something unexpected happend (e.g., 'disk space low').
-        - ERROR: The software has not been able to perform some functions.
-        - CRITICAL: The program itself maybe unable to continue running.
+- [X] Use logger to display debug messages. Logging levels:
+ - DEBUG: Detailed information of interests when diagnosing problems.
+ - INFO: Confirmation that things are working as expected.
+ - WARNING: An indication of something unexpected happend (e.g., 'disk space low').
+ - ERROR: The software has not been able to perform some functions.
+ - CRITICAL: The program itself maybe unable to continue running.
 
 21 Aug 2015
 - [X] Change OAuth to web url based
@@ -74,3 +73,21 @@ More recent data are fetched on a daily basis from a different table. More varia
 
 The final dataset for quantitative analysis is formed by merging the hostircal data and the more recent dataset.
 
+------------------------
+China A Shares - Symbols
+------------------------
+Replace 'x' as a number.
+
+**A Shares**
+- Shanghai Exchange: 60xxxx
+- Shenzhen Exchange: 000xxx
+- Mid-small Exchange: 00xxxx
+
+**B Shares**
+- Shanghai Exchange: 900xxx
+- Shenzhen Exchange: 200xxx
+
+**创业板**
+- 创业板: 30xxxx
+- 创业板增发: 37xxxx
+- 创业板配股: 38xxxx
