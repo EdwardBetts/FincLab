@@ -10,16 +10,6 @@
         Use this module to retreive authentication token and relevant strings
         to construct YQL request URLs.
 
-    Updates:
-        26 Aug 2015: Change settings file from json to configparser
-        24 Aug 2015: Set out an API to receive YQL raw command, parse into an URL, and return results.
-                     response = YahooOAuth.get('YQL Command')
-                     Get response from YQL URL
-        21 Aug 2015: Change OAuth to web url based
-                     Read/save consumer key and secret to a json file.
-                     Auto refresh session token if it is close to expiry (<60 secs)
-        07 Aug 2015: First version
-
     Sources:
         Two-legged YQL authentication
         https://developer.yahoo.com/forum/OAuth-General-Discussion-YDN-SDKs/OAuth-two-legged-documentation-omission-/1253773254000-104aac85-a511-3985-87b8-36f430730ca4/

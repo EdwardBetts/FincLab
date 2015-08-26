@@ -13,17 +13,6 @@ class FincLogger(logging.Logger):
     Learning resource:
         https://docs.python.org/3/howto/logging.html#logging-basic-tutorial
 
-    Logging levels:
-        - DEBUG: Detailed information of interests when diagnosing
-        problems.
-        - INFO: Confirmation that things are working as expected.
-        - WARNING: An indication of something unexpected happend (e.g.,
-        'disk space low').
-        - ERROR: The software has not been able to perform some
-        functions.
-        - CRITICAL: The program itself maybe unable to continue
-        running.
-
     Logging library:
         - Logger: exposes the interface that application code directly
         uses.
