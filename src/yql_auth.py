@@ -19,25 +19,13 @@
 
         Python Logger
         https://docs.python.org/3/howto/logging.html#logging-basic-tutorial
-        Logging levels:
-        - DEBUG: Detailed information of interests when diagnosing
-        problems.
-        - INFO: Confirmation that things are working as expected.
-        - WARNING: An indication of something unexpected happend (e.g.,
-        'disk space low').
-        - ERROR: The software has not been able to perform some
-        functions.
-        - CRITICAL: The program itself maybe unable to continue
-        running.
 
-    To-do:
-        To include a pause command in .get() to avoid Yahoo penalty.
-        To save responses in Pandas.DataFrame rather than json.
-        """
+"""
 import random
 import time
 import base64
 import urllib.request
+import requests
 import re
 import logging
 import logging.config
@@ -58,9 +46,8 @@ class YahooOAuth(object):
     def __init__(self, config=Config('/Users/peter/Workspace/FincLab/settings/'),
                  logger=None):
         """
-        config : initiatate from src.config
-
-        Default is to use the first account in accounts.conf
+        config: Initiatate from src.config
+                Default is to use the first account in accounts.conf
         """
         self.acc_number = 0  # Default to use the first account from accounts.conf
         self.config = config
@@ -113,6 +100,8 @@ class YahooOAuth(object):
         request_oauth_token = 'oauth_token=' + self.config.accounts[self.acc_name]['oauth_token']
         request_q = urllib.parse.urlencode({'q': yql, 'format': 'json', 'env': opendatatables_url})
 
+        self.logger.debug('REQUEST_Q:' + request_q)
+
         # Construct the request URL
         url = (request_base +
                '?' + consumer_key +
@@ -125,19 +114,13 @@ class YahooOAuth(object):
                '&' + request_q)
 
         # Initiate a connection
-        req = urllib.request.Request(url)
         try:
-            response = urllib.request.urlopen(req)
-        except urllib.error.HTTPError as e:
-            self.logger.warning('YQL server cannot fulfill the request.')
-            self.logger.warning('Error code: ' + str(e.code))
-        except urllib.error.URLError as e:
-            self.logger.warning('Failed to reach the YQL server')
-            self.logger.warning('Error reason: ' + str(e.reason))
-        else:
-            self.logger.info('YQL executed successfully.')
-
-        return simplejson.loads(response.read().decode("utf8"))
+            response = requests.get(url, timeout=None, proxies=None)
+            return simplejson.loads(response.text)
+        except requests.exceptions as e:
+            self.logger.warning("Http Error in executing YQL: " + yql)
+            self.logger.warning("Error code: " + e)
+            return None
 
     def refresh_access_token(self):
         """Refresh access token.
@@ -200,21 +183,13 @@ class YahooOAuth(object):
         """Read the content from a url
         Returns the content in string
         """
-        req = urllib.request.Request(url)
-        # Handle errors
         try:
-            response = urllib.request.urlopen(req)
-        except urllib.error.HTTPError as e:
-            self.logger.debug('The server cannot fulfill the request.')
-            self.logger.debug('Error code: ' + str(e.code))
-        except urllib.error.URLError as e:
-            self.logger.debug('We failed to reach the Yahoo! OAuth server')
-            self.logger.debug('Error reason: ' + str(e.reason))
-        else:
-            self.logger.debug('Authenticated successfully.')
-
-        oauth_token = response.read().decode("utf8")
-        return oauth_token
+            response = requests.get(url, timeout=None, proxies=None)
+            return response.text
+        except requests.exceptions as e:
+            self.logger.warning("Http Error in reaching the YQL server.")
+            self.logger.warning("Error code: " + e)
+            return None
 
     def update_time_nonce(self):
         """Update two-leg authentication:
@@ -237,7 +212,7 @@ if __name__ == '__main__':
     # Some testings
     config.set_default()
     yf = YahooOAuth(config=config)
-    print(yf.get('select * from yahoo.finance.historicaldata where symbol = "YHOO" and startDate = "2009-09-11" and endDate = "2010-03-10"'))
+    print(yf.get('select * from yahoo.finance.historicaldata where symbol = "000058.sz" and startDate = "2015-08-26" and endDate = "2015-08-28"'))
     print('current time is: ',  time.time())
     print('Done!')
 

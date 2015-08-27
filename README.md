@@ -1,21 +1,28 @@
-Project FincLab
+FincLab
 ==
 
-The main purpose of the FincLab project is to backtesting investment strategies on equity data.
+The main purpose of the FincLab project is to back-test investment strategies in equity markets.
 
-**FincLab.py**: Fetches historical daily stock data of major stock exchanges in U.S., Australia and China using Yahoo! YQL.
-- YQL has the advantage of high customizability, and theoretically can be used to download any data from Yahoo! (e.g. news events related to a company and industry classification). Other tools that utilises CSV api or Charts api cannot achieve this.
-- I can send more frequent YQL queries by appropriately authenticating my requests (up to 100,000 requests per day). Large usage quota is useful to brute force the possible symbols of all stocks in U.S.
+**FincLab.py**: Fetches historical stock daily data of major stock exchanges in U.S., Australia and China via Yahoo! YQL.
+- YQL has the advantage of high customizability. Theoretically it supports downloading most data from Yahoo! (e.g. news events and industry classifications), a benefit that other APIs, such as the CSV or the Charts API, cannot achieve.
+- I can send more YQL queries after completing the authenticating process (20,000 requests per hour capped at 100,000 per day compared to 2000 per hour via public API). Note I can easily inflate request quota by rotating Yahoo accounts. Large usage quota is useful when using brute force to find possible symbols of all stocks in U.S.
 
-**Back-testing**: A back-testing platform to explore investment strategies and to simulate investment returns using historical data.
-- Each quantitative model is implemented in individual IPython notebooks for visualisation.
-- Markdowns and visuals are removed when an investment strategy is called by FincLab.
-- Back-testing results and portfolio components are summarized and emailed to the end-user.
+**Back-testing**: A platform that aggregates historical data to explore investment strategies..
+- Each quantitative model is implemented in an individual IPython notebook.
+- Markdowns and visuals are removed when executing an investment strategy during back-testing.
+- Results and portfolio components are summarized and emailed to the end-user.
 
-**Real-time Trading**: This part is left out for future developement - the real-time trading integration with multiple financial brokers to engage with trading in multiple markets.
-- Real-time monitor prices of stocks in the portfolio. Send email to / call the end-user if extreme movements occur (e.g. price dropped from the local maximum by 5%).
+**Real-time Trading**: This part is left out for future developement - real-time trading integration with multiple financial brokers.
+- Real-time monitors prices of portfolio assets. If observed extreme movements, send email / make a call to the end-user.
 
 ## To-do list
+- [ ] Get company info: symbol, name (CN/EN), industry. Store in a cross-sectional data table.
+- [ ] Make yql_auth.py to solely return the URL strings. Use other classes to complete download tasks.
+- [ ] Sequentially fetch histoical prices of all A shares using Pandas datareader.
+- [ ] Add a counter in the fetching process to track number of requests sent within an hour.
+- [ ] Automatically swtich from pandas datareader to my own yql downloader when exceeding the hourly requests limit.
+- [ ] To include a pause command in .get() to avoid Yahoo penalty.
+- [ ] To save responses in Pandas.DataFrame rather than json.
 - [ ] To find out the naming rules for stock IDs in China. Use bruteforce to find out all of the IDs, including both listed and unlisted stocks.
 - [ ] For all other stock exchanges, gather their IDs from the Excel sheet available on internet.
 - [ ] Trace number of queries sent every hour and every day. Delay query to the following hour once approached the quota limit.
@@ -28,6 +35,9 @@ The main purpose of the FincLab project is to backtesting investment strategies 
 - [ ] Seek possible integration with online brokers, such as the Interactive Brokers' API.
 
 ## Updates
+27 Aug 2015
+- [X] To replace urllib and http.client as requests. Handle http exceptions using requests.
+
 26 Aug 2015
 - [X] Change settings file from json to configparser
 
