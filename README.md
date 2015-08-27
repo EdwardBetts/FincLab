@@ -36,6 +36,7 @@ The main purpose of the FincLab project is to back-test investment strategies in
 
 ## Updates
 27 Aug 2015
+- [X] Improved the config class by reading all setting values as object properties.
 - [X] To replace urllib and http.client as requests. Handle http exceptions using requests.
 
 26 Aug 2015

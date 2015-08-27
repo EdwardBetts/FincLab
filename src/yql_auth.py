@@ -3,8 +3,8 @@
     Author: Peter Lee (mr.peter.lee@hotmail.com)
 
     Usage:
-        session = YahooOAuth(token_file='oauth.json')
-        response = session.get('YQL Command')
+        session = YahooOAuth(config=config, logger=logger)
+        request_url = session.parse('YQL Command')
 
     Notes:
         Use this module to retreive authentication token and relevant strings
@@ -77,7 +77,7 @@ class YahooOAuth(object):
         if not self.token_is_valid():
             self.refresh_access_token()
 
-    def get(self, yql):
+    def parse(self, yql):
         """Method to retreive user specified YQL command
 
         Learning resource: yos-social-python from github.com
@@ -113,14 +113,7 @@ class YahooOAuth(object):
                '&' + request_oauth_token +
                '&' + request_q)
 
-        # Initiate a connection
-        try:
-            response = requests.get(url, timeout=None, proxies=None)
-            return simplejson.loads(response.text)
-        except requests.exceptions as e:
-            self.logger.warning("Http Error in executing YQL: " + yql)
-            self.logger.warning("Error code: " + e)
-            return None
+        return url
 
     def refresh_access_token(self):
         """Refresh access token.
@@ -212,7 +205,7 @@ if __name__ == '__main__':
     # Some testings
     config.set_default()
     yf = YahooOAuth(config=config)
-    print(yf.get('select * from yahoo.finance.historicaldata where symbol = "000058.sz" and startDate = "2015-08-26" and endDate = "2015-08-28"'))
+    print(yf.parse('select * from yahoo.finance.historicaldata where symbol = "000058.sz" and startDate = "2015-08-26" and endDate = "2015-08-28"'))
     print('current time is: ',  time.time())
     print('Done!')
 

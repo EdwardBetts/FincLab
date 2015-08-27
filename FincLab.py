@@ -39,7 +39,7 @@ def main():
     print(config)
     yf = src.yql_auth.YahooOAuth(config=config, logger=logger)
     logger.debug('get_nonce()' + yf.get_nonce())
-    print(yf.get('select * from yahoo.finance.historicaldata where symbol = "YHOO" and startDate = "2009-09-11" and endDate = "2010-03-10"'))
+    print(yf.parse('select * from yahoo.finance.historicaldata where symbol = "YHOO" and startDate = "2009-09-11" and endDate = "2010-03-10"'))
     print('Done!')
 
 if __name__ == "__main__":

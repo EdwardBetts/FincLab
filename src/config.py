@@ -9,9 +9,6 @@
     Note:
         Use this module to load configuration settings from a file.
 
-    Updates:
-        25 Aug 2015: First version
-
     Sources:
         configparser Quickstart
         https://docs.python.org/3.4/library/configparser.html
@@ -19,9 +16,24 @@
 
 import configparser
 
+class Configuration:
+    """
+    """
+    def __init__(self, *file_names):
+        parser = configparser.SafeConfigParser()
+        parser.optionxform = str  # make option names case sensitive
+        found = parser.read(file_names)
+        if not found:
+            raise ValueError("Config file " + file_name + " is not found!")
+        else:
+            for section in parser.sections():
+                self.__dict__.update(parser.items(section))
 
-class Config(object):
-    """All settings for the project
+config = Configuration('/Users/peter/Workspace/FincLab/settings/general.conf',
+                       '/Users/peter/Workspace/FincLab/settings/accounts.conf')
+
+class Gen_Default_Config:
+    """Generate default setting files for the project
 
     Config files:
         /conf/accounts.conf - User/session token
@@ -82,16 +94,19 @@ class Config(object):
         self.accounts = configparser.ConfigParser()
         self.accounts.read(self.file_accounts)
 
+reset = Gen_Default_Config('/Users/peter/Workspace/FincLab/settings/')
+
+
 if __name__ == "__main__":
-    config = Config('/Users/peter/Workspace/FincLab/settings/')
-    print(config.file_general)
-    print(config.file_accounts)
-    config.set_default()
-    config.load()
-    for acc in config.accounts.sections():
+    # Reset settings to default values
+    reset.set_default()
+    for acc in reset.accounts.sections():
         print(acc)
-        print(config.accounts[acc])
-        for item in config.accounts[acc]:
-            print(config.accounts[acc][item])
+        print(reset.accounts[acc])
+        for item in reset.accounts[acc]:
+            print("file accounts.conf", "Section:", acc, "Item:", item, "Value:", reset.accounts[acc][item])
     print('testing')
 
+    # Checking config attributes
+    print(config.consumer_key)
+    print(config.author)
