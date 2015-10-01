@@ -1,7 +1,9 @@
 FincLab
 ==
 
-The main purpose of the FincLab project is to back-test investment strategies in equity markets.
+Author: Peter Lee
+
+FincLab project aims to back-test investment strategies in several equity markets.
 
 **FincLab.py**: Fetches historical stock daily data of major stock exchanges in U.S., Australia and China via Yahoo! YQL.
 - YQL has the advantage of high customizability. Theoretically it supports downloading most data from Yahoo! (e.g. news events and industry classifications), a benefit that other APIs, such as the CSV or the Charts API, cannot achieve.
@@ -35,6 +37,11 @@ The main purpose of the FincLab project is to back-test investment strategies in
 - [ ] Seek possible integration with online brokers, such as the Interactive Brokers' API.
 
 ## Updates
+1 Oct 2015
+- [X] Port application to server-au; Installed virtualenv using the following
+  command:
+  python3 -m virtualenv -p /usr/bin/python3 venv
+
 27 Aug 2015
 - [X] Improved the config class by reading all setting values as object properties.
 - [X] To replace urllib and http.client as requests. Handle http exceptions using requests.
