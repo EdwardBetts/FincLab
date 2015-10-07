@@ -1,21 +1,19 @@
 FincLab
-==
+=======
 
 Author: Peter Lee
 
-FincLab project aims to back-test investment strategies in several equity markets.
+The FincLab project is designed to back-test investment strategies in several equity markets.
 
-**FincLab.py**: Fetches historical stock daily data of major stock exchanges in U.S., Australia and China via Yahoo! YQL.
-- YQL has the advantage of high customizability. Theoretically it supports downloading most data from Yahoo! (e.g. news events and industry classifications), a benefit that other APIs, such as the CSV or the Charts API, cannot achieve.
-- I can send more YQL queries after completing the authenticating process (20,000 requests per hour capped at 100,000 per day compared to 2000 per hour via public API). Note I can easily inflate request quota by rotating Yahoo accounts. Large usage quota is useful when using brute force to find possible symbols of all stocks in U.S.
+The project comprises of three main components, namely:
 
-**Back-testing**: A platform that aggregates historical data to explore investment strategies..
-- Each quantitative model is implemented in an individual IPython notebook.
-- Markdowns and visuals are removed when executing an investment strategy during back-testing.
-- Results and portfolio components are summarized and emailed to the end-user.
+**FincLab.py** - fetches historical stock daily data of major stock exchanges in U.S., Australia and China via Yahoo! YQL.
+**Back-testing** - a platform that prepares local data and evaluate investment strategies.
+- Each quantitative model is implemented in an individual Jupyter notebook for easy access.
+- Markdowns and visuals are removed from the Jupyter notebook when executing an investment strategy in back-testing.
+- Result highlights and portfolio weights are emailed to the end-user.
 
-**Real-time Trading**: This part is left out for future developement - real-time trading integration with multiple financial brokers.
-- Real-time monitors prices of portfolio assets. If observed extreme movements, send email / make a call to the end-user.
+**Real-time Trading** - for future developement, real-time trading integration with financial brokers.
 
 ## To-do list
 - [ ] Get company info: symbol, name (CN/EN), industry. Store in a cross-sectional data table.
@@ -40,7 +38,9 @@ FincLab project aims to back-test investment strategies in several equity market
 1 Oct 2015
 - [X] Port application to server-au; Installed virtualenv using the following
   command:
+```
   python3 -m virtualenv -p /usr/bin/python3 venv
+```
 
 27 Aug 2015
 - [X] Improved the config class by reading all setting values as object properties.
@@ -51,15 +51,16 @@ FincLab project aims to back-test investment strategies in several equity market
 
 25 Aug 2015
 - [X] Load all config settings from settings.conf
-.. code:: python
-
+```
     import src.config
     config = src.config.Config(settings_folder)
+```
 
 24 Aug 2015
 - [X] Set out an API to receive YQL raw command, parse into an URL, and return results.
-.. code:: python
+```
         response = YahooOAuth.get('YQL Command')
+```
         
 - [X] Get response from YQL URL
 
@@ -74,10 +75,17 @@ FincLab project aims to back-test investment strategies in several equity market
 21 Aug 2015
 - [X] Change OAuth to web url based
 - [X] Read/save consumer key and secret to a json file.
-- [X] Auto refresh session token if it is close to expiry (<60 secs)
+- [X] Auto refresh session token if it is close to expiry (less than 60 secs)
 
 07 Aug 2015 - First version
 - [X] Sign up Yahoo! API, and use OAuth and YQL to send 100,000 legitimate YQL Queries every day.
+
+## FAQs
+
+### Why choose Yahoo! YQL?
+YQL has the advantage of high customizability. Theoretically it supports downloading most data from Yahoo! (e.g. news events and industry classifications), providing more flexibility than other APIs.
+In addition, I can send more YQL queries after completing the authenticating process (20,000 requests per hour capped at 100,000 per day compared to 2000 per hour via public API). Note I can easily inflate request quota by rotating Yahoo accounts. Large usage quota is useful when using brute force to find possible symbols of all stocks in U.S.
+
 
 ## Notes
 -------------------------------------
