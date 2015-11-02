@@ -8,11 +8,11 @@ import logging
 import logging.config
 import importlib
 
-from src.config import Config
-from src.yql_auth import YahooOAuth
-import src
-importlib.reload(src.config)
-importlib.reload(src.yql_auth)
+from lib.config import Config
+from lib.yql_auth import YahooOAuth
+import lib
+importlib.reload(lib.config)
+importlib.reload(lib.yql_auth)
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
     logger = logging.getLogger('FincLab')
 
     # Load program settings
-    config = src.config.Config(settings_folder)
+    config = lib.config.Configuration(settings_folder)
     for acc in config.accounts.sections():  # Show account info
         for item in config.accounts[acc]:
             logger.info('# ' + acc + ' credentials' +
@@ -37,7 +37,7 @@ def main():
     logger.debug('Resetting settings conf.')
     config.set_default()
     print(config)
-    yf = src.yql_auth.YahooOAuth(config=config, logger=logger)
+    yf = lib.yql_auth.YahooOAuth(config=config, logger=logger)
     logger.debug('get_nonce()' + yf.get_nonce())
     print(yf.parse('select * from yahoo.finance.historicaldata where symbol = "YHOO" and startDate = "2009-09-11" and endDate = "2010-03-10"'))
     print('Done!')
