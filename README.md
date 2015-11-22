@@ -3,17 +3,16 @@ FincLab
 
 Author: Peter Lee
 
-The FincLab project is designed to back-test investment strategies in several equity markets.
+The FincLab project is designed to back-test market signals using factor models in China A-share markets.
 
 The project comprises of three main components, namely:
 
-**FincLab.py** - fetches historical stock daily data of major stock exchanges in U.S., Australia and China via Yahoo! YQL.
-**Back-testing** - a platform that prepares local data and evaluate investment strategies.
-- Each quantitative model is implemented in an individual Jupyter notebook for easy access.
-- Markdowns and visuals are removed from the Jupyter notebook when executing an investment strategy in back-testing.
-- Result highlights and portfolio weights are emailed to the end-user.
+**FincLab.py** - fetch historical China A-share price data via Yahoo! YQL.
+ - Daily price information
+ - Comapnay information
 
-**Real-time Trading** - for future developement, real-time trading integration with financial brokers.
+**Back-testing** - a platform to evaluate investment models.
+ - Each quantitative model is implemented in an individual Jupyter notebook for easy access.
 
 ## To-do list
 - [ ] Get company info: symbol, name (CN/EN), industry. Store in a cross-sectional data table.
@@ -33,6 +32,17 @@ The project comprises of three main components, namely:
 - [ ] Construct an Alpha strategy.
 - [ ] Implement real-time trading by following the strategy.
 - [ ] Seek possible integration with online brokers, such as the Interactive Brokers' API.
+
+## Introduction
+
+#### Algorithmic Trading
+
+The program is intended to be *Algorithimic Trading* - An algorithm specifically without any human intervention. It refers to the retail practice of automated, systematic and quantitative trading. Note that a class of execution algorithms (such as Volume Weighted Average Price, or VWAP) is a different concept.
+
+Advantages:
+ - Historical Assessment: Model performance can be ascertained on histroical market data, which is hopefully representative of future market data, through the use of backtesting. Backtesting allows the statistical properties of the strategy to be determined.
+ - Efficiency: With a fully automated system, there is no need for an individual to be constantly monitor the markets for price actions or news input. This frees up time for the developer of the trading strategy to carry out more resarch.
+ - No Discretionary Input: This refers to modification of trades at the point of execution or while in a position. Fear and greed can be overwhelming motivators when carrying out discretionary trading.
 
 ## Updates
 1 Oct 2015

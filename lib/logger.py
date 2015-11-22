@@ -80,6 +80,36 @@ class FincLogger(logging.Logger):
         self.addHandler(ch)
 
 
+class SimpleLogger(logging.Logger):
+    """
+    A simpler logger without headers.
+    """
+
+    def __init__(self, name, level=logging.DEBUG):
+        """
+        - name : logger name
+        - filename : file containing logs
+        """
+        super(SimpleLogger, self).__init__(name)
+        self.name = name
+        self.level = level
+
+        self.setLevel(self.level)
+
+        # create formatter
+        formatter = logging.Formatter("[%(name)s %(asctime)s %(levelname)s]  %(message)s",
+                                      )
+        # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+        # create console handler and set level to debug
+        ch = logging.StreamHandler()
+        ch.setLevel(self.level)
+        ch.setFormatter(formatter)
+
+        # add ch to logger
+        self.addHandler(ch)
+
+
 if __name__ == '__main__':
     """
     Learning source:
