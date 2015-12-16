@@ -1,0 +1,42 @@
+Summary Statistics of Rolling Window
+Sampe period, 2001 - 2006
+Forecast period, 2007 - 2007
+# firms excluded due to too few obs in sample, 5268
+# firms excluded due to undefined category, 0
+# firms excluded due to missing values, 0
+# firms in Final Data, 5098
+Fitness Stats - Pairwise Correlation
+Spec DefaultModel, .1037788938176614
+Fitness Stats - Top 100 Ranking
+Spec DefaultModel, 14
+Fitness Stats - Top 50 Ranking
+Spec DefaultModel, 6
+Fitness Stats - Top 10 Ranking
+Spec DefaultModel, 1
+Fitness Stats - Bottom 100 Ranking
+Spec DefaultModel, 10
+Fitness Stats - Bottom 50 Ranking
+Spec DefaultModel, 2
+Fitness Stats - Bottom 10 Ranking
+Spec DefaultModel, 0
+Fitness Stats - MAD of Rank Differences
+Spec DefaultModel, 1558.411141624166
+Fitness Stats - Wilcoxon Signed-Rank Test (z-stats)
+Spec DefaultModel, 1.025374639886817
+Fitness Stats - Long/Short Portfolio Performance (annualised excess return)
+Long/Short Portfolio = Long Top 10 firms & Short Bottom 10 firms
+Spec DefaultModel - L/S 10 Portfolio, -.0001202128083455
+Spec DefaultModel - Benchmark EW, -.0543636341081566
+Spec DefaultModel - t test of equality (p-value), .3219663512875921
+Long/Short Portfolio = Long Top 25 firms & Short Bottom 25 firms
+Spec DefaultModel - L/S 25 Portfolio, .0022067240580304
+Spec DefaultModel - Benchmark EW, -.0543636341081566
+Spec DefaultModel - t test of equality (p-value), .3010909699265846
+Long/Short Portfolio = Long Top 50 firms & Short Bottom 50 firms
+Spec DefaultModel - L/S 50 Portfolio, .0017856555794074
+Spec DefaultModel - Benchmark EW, -.0543636341081566
+Spec DefaultModel - t test of equality (p-value), .2949753583276315
+Long/Short Portfolio = Long Top 100 firms & Short Bottom 100 firms
+Spec DefaultModel - L/S 100 Portfolio, .0009456843347524
+Spec DefaultModel - Benchmark EW, -.0543636341081566
+Spec DefaultModel - t test of equality (p-value), .3063689529433998
