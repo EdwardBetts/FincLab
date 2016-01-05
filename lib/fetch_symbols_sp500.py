@@ -13,9 +13,6 @@
 """
 
 import datetime
-from datetime import timedelta
-from math import ceil
-
 import bs4
 import MySQLdb as mdb
 import requests
@@ -32,8 +29,8 @@ def parse_wiki_sp500():
 
     # Use requests and BS4 to download / obtain the symbol table
     response = requests.get(
-            "http://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-            )
+        "http://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
+    )
     soup = bs4.BeautifulSoup(response.text)
 
     # This selects the first table, using CSS Selector syntax and then ignores the header row ([1:])
@@ -44,14 +41,14 @@ def parse_wiki_sp500():
     for i, symbol in enumerate(symbolslist):
         tds = symbol.select('td')
         symbols.append(
-                    [
-                        tds[0].select('a')[0].text,  # Ticker
-                        'stock',
-                        tds[1].select('a')[0].text,  # Name
-                        tds[3].text,                 # Sector
-                        'USD', now, now
-                    ]
-                )
+            [
+                tds[0].select('a')[0].text,  # Ticker
+                'stock',
+                tds[1].select('a')[0].text,  # Name
+                tds[3].text,                 # Sector
+                'USD', now, now
+            ]
+        )
 
     return symbols
 
@@ -66,8 +63,8 @@ def update_sp500_symbols(symbols):
     db_pass = 'FincLab@2015'
     db_name = 'securities_master'
     con = mdb.connect(
-            host=db_host, user=db_user, passwd=db_pass, db=db_name
-        )
+        host=db_host, user=db_user, passwd=db_pass, db=db_name
+    )
 
     # Create the insert strings
     column_str = "ticker, instrument, name, sector, currency, created_date, last_updated_date"
@@ -83,7 +80,7 @@ def update_sp500_symbols(symbols):
 if __name__ == "__main__":
     symbols = parse_wiki_sp500()
     for i, symbol in enumerate(symbols):
-        print(i+1, symbol, '\n')
+        print(i + 1, symbol, '\n')
     print("Now updating downloaded symbols to securities_master database")
     update_sp500_symbols(symbols)
     print("{0} symbols were successfully added.".format(len(symbols)))
