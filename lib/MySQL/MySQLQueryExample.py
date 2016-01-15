@@ -35,12 +35,13 @@ def queryWithFetchone():
             print(row)
             row = cursor.fetchone()  # pop out this item and fill in the next
 
+    except mdb.Error as e:
+        print(e)
+
+    finally:
         # Close connection
         cursor.close()
         conn.close()
-
-    except mdb.Error as e:
-        print(e)
 
 
 def queryWithFetchall():

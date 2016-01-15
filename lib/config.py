@@ -21,7 +21,6 @@
 """
 
 import configparser
-import os
 
 
 class Configuration:

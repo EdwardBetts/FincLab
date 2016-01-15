@@ -14,14 +14,15 @@
 
 import datetime
 import bs4
-import MySQLdb as mdb
 import requests
+
+import MySQLdb as mdb
+from lib.load_config import load_config
 
 
 def parse_wiki_sp500():
     """
     Download and parse the Wikipedia list of S&P 500 constituents using requests and Beautifulsoup.
-
     Returns a list of tuples (to be uploaded to MySQL)
     """
     # Stores the current time, for the created_at record
@@ -34,11 +35,11 @@ def parse_wiki_sp500():
     soup = bs4.BeautifulSoup(response.text)
 
     # This selects the first table, using CSS Selector syntax and then ignores the header row ([1:])
-    symbolslist = soup.select('table')[0].select('tr')[1:]
+    symbol_list = soup.select('table')[0].select('tr')[1:]
 
     # Obtain the symbol information for each row in the S&P 500 constituents table
     symbols = []
-    for i, symbol in enumerate(symbolslist):
+    for i, symbol in enumerate(symbol_list):
         tds = symbol.select('td')
         symbols.append(
             [
@@ -53,34 +54,38 @@ def parse_wiki_sp500():
     return symbols
 
 
-def update_sp500_symbols(symbols):
+def insert_sp500_symbols(data):
     """
     Insert the S&P 500 symbols into the MySQL database
     """
-    # Connect to the MySQL database
-    db_host = 'localhost'
-    db_user = 'sec_user'
-    db_pass = 'FincLab@2015'
-    db_name = 'securities_master'
-    con = mdb.connect(
-        host=db_host, user=db_user, passwd=db_pass, db=db_name
-    )
+    db_config = load_config('MySQL_finclab')
 
-    # Create the insert strings
-    column_str = "ticker, instrument, name, sector, currency, created_date, last_updated_date"
-    insert_str = ("%s, " * 7)[:-2]
-    final_str = "INSERT INTO symbol (%s) VALUES (%s)" % (column_str, insert_str)
+    try:
+        conn = mdb.Connection(**db_config)
+        cursor = conn.cursor()
 
-    # Using the MySQL connection, carry out an INSERT INTO for every symbol
-    with con:
-        cur = con.cursor()
-        cur.executemany(final_str, symbols)
+        cols = "ticker, instrument, name, sector, currency, created_date, last_updated_date"
+        args = "%s, " * len(cols.split(','))
+        args = args[:-2]
+        query = """
+                    INSERT INTO symbol ({cols}) VALUES ({args})
+                """.format(cols=cols, args=args)
+
+        # Using the MySQL connection, carry out an INSERT INTO for every symbol
+        cursor.executemany(query, data)
+        # print("Last updated row is:", cursor.lastrowid)
+        conn.commit()
+    except mdb.Error as e:
+        print("Error:", e)
+    finally:
+        cursor.close()
+        conn.close()
 
 
 if __name__ == "__main__":
     symbols = parse_wiki_sp500()
     for i, symbol in enumerate(symbols):
-        print(i + 1, symbol, '\n')
-    print("Now updating downloaded symbols to securities_master database")
-    update_sp500_symbols(symbols)
-    print("{0} symbols were successfully added.".format(len(symbols)))
+        print(i + 1, ' '.join(str(x) for x in symbol))
+    print("Begin to insert symbols to MySQL.")
+    insert_sp500_symbols(symbols)
+    print("{} symbols were successfully added.".format(len(symbols)))

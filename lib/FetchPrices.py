@@ -213,7 +213,7 @@ class FetchPrices():
             self.logger.debug("The ID exists. Proceed to download.")
         elif self.last_check is None:
             self.logger.debug("self.last_check is None. Proceed to download.")
-        elif self.last_check < today-BDay(20):
+        elif self.last_check < today - BDay(20):
             self.logger.debug("The ID does not exist, but last check was made more than 20 days ago. Proceed to download.")
         else:
             self.logger.warning(self.yahoo_id + " does not exist and that the last check was made within 20 days. Downloading historical data is ABORTED.")

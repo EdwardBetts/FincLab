@@ -15,11 +15,12 @@ def connect_excplict():
                            user='root',
                            passwd='Tonkay2819')
         print("Connected to MySQL database")
-        conn.close()
 
     except mdb.Error as e:
         print(e)
 
+    finally:
+        conn.close()
 
 def connect():
     """ Connect to MySQL database by loading database setttings from config.ini. """
@@ -31,11 +32,14 @@ def connect():
         print("Connecting to MySQL database...")
         conn = mdb.connection(**db_config)
         print('connection established.')
+        
+    except mdb.Error as e:
+        print(e)
+
+    finally:
         conn.close()
         print('connection closed.')
 
-    except mdb.Error as e:
-        print(e)
 
 
 if __name__ == '__main__':
