@@ -16,16 +16,11 @@ This logic is handled by placing a "SignalEvent" object on the events queue in e
 
 import datetime as dt
 import numpy as np
-
-from strategy import Strategy
+from strategy.ABC import ABC as StrategyABC
 from event import SignalEvent
-from engine import Engine
-from data import HistoricDataHandler
-from execution import SimulatedExecutionHandler
-from portfolio import Portfolio
 
 
-class MovingAverageCrossoverStrategy(Strategy):
+class MovingAverageCrossover(StrategyABC):
     """
     Carries out a basic Moving Average Crossover strategy with a long/short simple weighted moving average. Default long/short window are 100/400 periods respectively - 100 and 400 as the "short" and "long" lookback periods for this strategy.
 
@@ -69,7 +64,7 @@ class MovingAverageCrossoverStrategy(Strategy):
 
         Parameters
         ----------
-        event - Event object
+        event : Event object
             Acts upon receiving a MarketEvent
         """
 
@@ -111,24 +106,3 @@ class MovingAverageCrossoverStrategy(Strategy):
                         )
                         self.event_queue.put(signal_event)
                         self.bought[symbol] = "OUT"
-
-
-if __name__ == "__main__":
-    # Program parameters
-    symbol_list = ['AAPL']
-    initial_capital = 100000.0
-    heartbeat = 0.0
-    start_date = dt.datetime(2014, 1, 1, 0, 0, 0)
-
-    # Backtest
-    engine = Engine(
-        symbol_list=symbol_list,
-        data_handler=HistoricDataHandler,
-        execution_handler=SimulatedExecutionHandler,
-        portfolio=Portfolio,
-        strategy=MovingAverageCrossoverStrategy,
-        heartbeat=heartbeat,
-        initial_capital=initial_capital,
-        start_date=start_date
-    )
-    engine.run()
