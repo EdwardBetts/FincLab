@@ -1,8 +1,7 @@
 """
-Performance Metrics
-
+Module : Performance Metrics
+----------------------------
 A number of metrics to evaluate portfolio/strategy performance are included here.
-
 """
 
 
@@ -34,12 +33,9 @@ def create_drawdowns(pnl):
 
     # Calculate the cumulative return curve and set up the High Water Mark
     hwm = [0]
-
-    # Create the drawdown and duration series
     idx = pnl.index
     drawdown = pd.Series(index=idx)
     duration = pd.Series(index=idx)
-
     # Loop over the index range
     for t in range(1, len(idx)):
         hwm.append(max(hwm[t - 1], pnl[t]))

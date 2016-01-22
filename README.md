@@ -1,18 +1,26 @@
 FincLab
 =======
 
-Author: Peter Lee
+Author: Peter Lee (mr.peter.lee@hotmail.com)
 
-The FincLab project is designed to back-test market signals using factor models in China A-share markets.
+FincLab is an event-driven system that incorporates the following features:
+ - a robust event-driven backtesting engine
+ - fetch and manage historic market data
+ - supports a number of datasources, including SQL, CSV and Stata files
+ - incorporates a number of strategies
 
-The project comprises of three main components, namely:
+# Project Docs
+[http://icm.fund](http://icm.fund)
 
-**FincLab.py** - fetch historical China A-share price data via Yahoo! YQL.
- - Daily price information
- - Comapnay information
+# Description
+    Simple and robust implementation of a back-testing engine. Very useful in developing algorithmic strategies.
 
-**Back-testing** - a platform to evaluate investment models.
- - Each quantitative model is implemented in an individual Jupyter notebook for easy access.
+    Classes: from main.py import Main()
+    -------
+        The event-driven engine.
+
+        
+
 
 ## To-do list
 - [ ] Get company info: symbol, name (CN/EN), industry. Store in a cross-sectional data table.
