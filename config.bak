@@ -1,0 +1,21 @@
+; Configuration files for the FincLab project.
+
+[Components]
+strategy = MovingAverageCrossover
+data_handler = HistoricDataHandler
+execution_handler = SimulatedExecutionHandler
+
+[MySQL_root]
+host = localhost
+db = mysql
+user = root
+passwd = Tonkay2819
+
+[MySQL_finclab]
+host = localhost
+db = finclab
+user = finclab
+passwd = FincLab@2015
+
+[Quandl]
+api_key = tS74zmYmQYn78qFdqMnS
