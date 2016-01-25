@@ -9,50 +9,49 @@ FincLab is an event-driven system that incorporates the following features:
  - supports a number of datasources, including SQL, CSV and Stata files
  - incorporates a number of strategies
 
-# Project Docs
-[http://icm.fund](http://icm.fund)
-
 # Description
-    Simple and robust implementation of a back-testing engine. Very useful in developing algorithmic strategies.
-
-    Classes: from main.py import Main()
-    -------
-        The event-driven engine.
-
-        
+    A simple yet robust implementation of a back-testing engine. Could be useful to prototype algorithmic trading strategies.
 
 
 ## To-do list
-- [ ] Get company info: symbol, name (CN/EN), industry. Store in a cross-sectional data table.
-- [ ] Make yql_auth.py to solely return the URL strings. Use other classes to complete download tasks.
+- [ ] Add a commandline interface using curses
 - [ ] Sequentially fetch histoical prices of all A shares using Pandas datareader.
 - [ ] Add a counter in the fetching process to track number of requests sent within an hour.
-- [ ] Automatically swtich from pandas datareader to my own yql downloader when exceeding the hourly requests limit.
-- [ ] To include a pause command in .get() to avoid Yahoo penalty.
-- [ ] To save responses in Pandas.DataFrame rather than json.
 - [ ] To find out the naming rules for stock IDs in China. Use bruteforce to find out all of the IDs, including both listed and unlisted stocks.
 - [ ] For all other stock exchanges, gather their IDs from the Excel sheet available on internet.
-- [ ] Trace number of queries sent every hour and every day. Delay query to the following hour once approached the quota limit.
-- [ ] Automate and repeat the process of finding stock IDs every month.
 - [ ] Using the master list of stock IDs, download stock information from Yahoo! Finance.
-- [ ] Store stock information using SQL Lite and MYSQL.
-- [ ] Use IPython notebook as a back-testing platform to simulate investment portfolios and produce visuals.
 - [ ] Construct an Alpha strategy.
 - [ ] Implement real-time trading by following the strategy.
-- [ ] Seek possible integration with online brokers, such as the Interactive Brokers' API.
 
-## Introduction
-
-#### Algorithmic Trading
-
-The program is intended to be *Algorithimic Trading* - An algorithm specifically without any human intervention. It refers to the retail practice of automated, systematic and quantitative trading. Note that a class of execution algorithms (such as Volume Weighted Average Price, or VWAP) is a different concept.
-
-Advantages:
- - Historical Assessment: Model performance can be ascertained on histroical market data, which is hopefully representative of future market data, through the use of backtesting. Backtesting allows the statistical properties of the strategy to be determined.
- - Efficiency: With a fully automated system, there is no need for an individual to be constantly monitor the markets for price actions or news input. This frees up time for the developer of the trading strategy to carry out more resarch.
- - No Discretionary Input: This refers to modification of trades at the point of execution or while in a position. Fear and greed can be overwhelming motivators when carrying out discretionary trading.
 
 ## Updates
+
+28 Dec 2015
+- [X] Seek possible integration with online brokers, such as the Interactive Brokers' API.
+
+23 Dec 2015
+- [X] Complete the event-driven back-testing platform to simulate investment portfolios and produce visuals.
+
+14 Nov 2015
+- [ ] To include a pause command in .get() to avoid Yahoo penalty.
+
+10 Nov 2015
+- [ ] To save responses in Pandas.DataFrame rather than json.
+
+4 Nov 2015
+- [ ] Automate and repeat the process of finding stock IDs every month.
+
+28 Oct 2015
+- [ ] Automatically swtich from pandas datareader to my own yql downloader when exceeding the hourly requests limit.
+
+15 Oct 2015
+- [X] Store stock information using SQL Lite and MYSQL.
+12 Oct 2015
+- [X] Make yql_auth.py to solely return the URL strings. Use other classes to complete download tasks.
+
+10 Oct 2015
+- [X] Get company info: symbol, name (CN/EN), industry. Store in a cross-sectional data table.
+
 1 Oct 2015
 - [X] Port application to server-au; Installed virtualenv using the following
   command:
