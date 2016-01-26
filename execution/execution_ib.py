@@ -1,7 +1,6 @@
 """
 Class: Event-Driven Execution - Interactive Brokers
 
-Author: Peter Lee
 Last update: 2016-Jan-18
 
 Sample module to hook up the event-driven system to a brokerage - a bit more sophisticated handling than directly tranform a OrderEvent to a FillEvent.

@@ -25,8 +25,7 @@ exec("from data.{module} import {module} as DataHandler".format(module=config["c
 exec("from execution.{module} import {module} as ExecutionHandler".format(module=config["components"]["execution_handler"]))
 exec("from strategy.{module} import {module} as Strategy".format(module=config["components"]["strategy"]))
 
-
-def main():
+def finclab():
     # Program parameters
     initial_capital = 100000.0
     heartbeat = 0.0
@@ -44,7 +43,38 @@ def main():
         initial_capital=initial_capital,
         start_date=start_date
     )
-    engine.run()
+    #engine.run()
 
 if __name__ == "__main__":
-    main()
+
+    import logging
+    import temp
+
+    # create logger with 'spam_application'
+    logger = logging.getLogger('WTF')
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    fh = logging.FileHandler('finclab.log')
+    fh.setLevel(logging.DEBUG)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+    # add the handlers to the logger
+    logger.addHandler(fh)
+    logger.addHandler(ch)
+
+    logger.info('creating an instance of temp.Auxiliary')
+    a = temp.Auxiliary()
+    logger.info('created an instance of temp.Auxiliary')
+    logger.info('calling temp.Auxiliary.do_something')
+    a.do_something()
+    logger.info('finished temp.Auxiliary.do_something')
+    logger.info('calling temp.some_function()')
+    temp.some_function()
+    logger.info('done with auxiliary_module.some_function()')
+
+    finclab()

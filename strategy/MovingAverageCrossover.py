@@ -2,7 +2,6 @@
 Strategy: Moving Average Crossover (MAC)
 ----------------------------------------
 
-Author: Peter Lee
 Data created: 2016-Jan-19
 
 Moving Average Crossover (MAC) is extremely handy for testing a new backtesting implementation. On a daily timeframe, over a number of years, with long lookback periods, few signals are generated on a single stock and thus it is eay to manually verify that the system is behaving as would be expected.

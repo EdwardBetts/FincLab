@@ -19,7 +19,6 @@ current_holdings : dict
 all_holdings : list of dict
     Stores all historical symbol holdings, plus a few more accounts
 
-
 Methods
 -------
 update_timeindex() : handles the new holdings tracking.

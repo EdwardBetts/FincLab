@@ -1,9 +1,6 @@
 """
 Class: Data Handler
 
-Author: Peter Lee
-Date created: 2016-Jan-14
-
 The DataHandler is an abstract base class (ABC), the rationale for this is that the ABC provides an interface that all inherited classes must adhere to, thereby ensuring compatibility with other system components that communicate with them.
 
 Its inherited classes require the input of 2 key parameters (events and symbol_list) and other optional parameters.
