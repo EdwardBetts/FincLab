@@ -48,6 +48,7 @@ class Engine(object):
                  execution_handler,
                  portfolio,
                  strategy,
+                 event_queue=queue.Queue(),
                  heartbeat=0,
                  initial_capital=1000000,
                  start_date=dt.datetime(1990, 1, 1, 0, 0, 0)):
@@ -72,6 +73,8 @@ class Engine(object):
             Handles the orders, and fills for trades.
         portfolio : Portfolio (Class) or an inherited class, default Portfolio.
             Keeps track of portfolio current and prior positions.
+        event_queue : queue.Queue()
+            Queue to queue up different events
         strategy : Strategy (Class) or an inherited class, default MovingAverageCrossoverStrategy.
             Generates signals based on market data.
         """
@@ -85,7 +88,7 @@ class Engine(object):
         self.portfolio_cls = portfolio
         self.strategy_cls = strategy
 
-        self.event_queue = queue.Queue()  # Constructs a FIFO queue with infinite queue size.
+        self.event_queue = event_queue
 
         self.num_signals = 0  # Number of processed SignalEvents
         self.num_orders = 0  # Number of processed OrderEvents
