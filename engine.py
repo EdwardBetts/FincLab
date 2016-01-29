@@ -4,6 +4,10 @@ Class: Event-Driven Engine
 Author: Peter Lee
 Date created: 2016-Jan-19
 
+Two parallel processes:
+    1.) Event-driven engine
+    2.) User Interface
+
 Notes
 -----
     The "Event-Driven Engine" is the core component of the system that:
@@ -31,13 +35,17 @@ Side loop : Some events are processed by multiple targets.
 
 """
 
-import pprint  # "pretty-print" to display the stats in an output-friendly manner
 import queue
 import time
 import datetime as dt
+import logging
+import os
+import multiprocessing as mp
+
+logger = logging.getLogger("FincLab.engine")
 
 
-class Engine(object):
+class Engine(mp.Process):
     """
     Core of the event-driven system : Sets up the event queue and directs event to the correct system component.
     """
@@ -87,8 +95,11 @@ class Engine(object):
         self.execution_handler_cls = execution_handler
         self.portfolio_cls = portfolio
         self.strategy_cls = strategy
-
         self.event_queue = event_queue
+
+        # Initialise a logger
+        self.logger = logging.getLogger("FincLab.Engine")
+        self.logger.propagate = True
 
         self.num_signals = 0  # Number of processed SignalEvents
         self.num_orders = 0  # Number of processed OrderEvents
@@ -103,7 +114,7 @@ class Engine(object):
         Attaches the trading objects (DataHandler, Strategy, Portfolio and ExecutionHandler) to internal members.
         """
 
-        print("Creating DataHandler, Strategy, Portfolio and ExecutionHandler.")
+        self.logger.info("Creating DataHandler, Strategy, Portfolio and ExecutionHandler.")
 
         self.data_handler = self.data_handler_cls(
             event_queue=self.event_queue,
@@ -152,7 +163,8 @@ class Engine(object):
         i = 0
         while True:
             i += 1
-            print(i)
+            # self.logger.debug(i)
+            self.logger.info("Process ID: {}".format(os.getpid()))
             # Check if DataHandler is running --> if yes, get a mareket update
             if self.data_handler.is_running:
                 self.data_handler.update_bars()  # push latest bar and put a market event into the queue
@@ -168,7 +180,6 @@ class Engine(object):
                 else:
                     if event is not None:
                         if event.type == 'MARKET':
-                            # print("Received a market event at {}".format(event.datetime))
                             self.strategy.calculate_signals(event)
                             self.portfolio.update_timeindex(event)
                         elif event.type == 'SIGNAL':
@@ -193,16 +204,16 @@ class Engine(object):
         """
         self.portfolio.create_equity_curve_dataframe()
 
-        print("Creating summary statistics...")
+        self.logger.info("Creating summary statistics...")
         stats = self.portfolio.output_summary_stats()
 
-        print("Creating equity curve...")
-        print(self.portfolio.equity_curve.tail(10))
-        pprint.pprint(stats)
+        self.logger.info("Creating equity curve...")
+        self.logger.info(self.portfolio.equity_curve.tail(10))
+        self.logger.info(stats)
 
-        print("Number of Signals: {}".format(self.num_signals))
-        print("Number of Orders: {}".format(self.num_orders))
-        print("Number of Fills: {}".format(self.num_fills))
+        self.logger.info("Number of Signals: {}".format(self.num_signals))
+        self.logger.info("Number of Orders: {}".format(self.num_orders))
+        self.logger.info("Number of Fills: {}".format(self.num_fills))
 
     def run(self):
         """
@@ -210,6 +221,7 @@ class Engine(object):
         """
         self._run_engine()
         self._output_performance()
+        return
 
 
 if __name__ == '__main__':

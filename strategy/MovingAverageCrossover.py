@@ -17,6 +17,7 @@ import datetime as dt
 import numpy as np
 from strategy.ABC import ABC as StrategyABC
 from event import SignalEvent
+import logging
 
 
 class MovingAverageCrossover(StrategyABC):
@@ -47,6 +48,10 @@ class MovingAverageCrossover(StrategyABC):
 
         # Set to True if a symbol is in the market
         self.bought = self._initialise_bought()
+
+        # Logger
+        # self.logger = Logger("FincLab.strategy.MAC")
+        self.logger = logging.getLogger("FincLab.mac")
 
     def _initialise_bought(self):
         """
@@ -82,7 +87,7 @@ class MovingAverageCrossover(StrategyABC):
                     signal_dir = ""
 
                     if short_sma > long_sma and self.bought[symbol] == "OUT":
-                        print("Long: {}".format(bar_date))
+                        self.logger.info("Long: {}".format(bar_date))
                         signal_dir = "LONG"
                         signal_event = SignalEvent(
                             strategy_id=1,
@@ -94,7 +99,7 @@ class MovingAverageCrossover(StrategyABC):
                         self.event_queue.put(signal_event)
                         self.bought[symbol] = 'LONG'
                     elif short_sma < long_sma and self.bought[symbol] == "LONG":
-                        print("SHORT: {}".format(bar_date))
+                        self.logger.info("SHORT: {}".format(bar_date))
                         signal_dir = "EXIT"
                         signal_event = SignalEvent(
                             strategy_id=1,

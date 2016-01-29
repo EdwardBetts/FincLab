@@ -27,6 +27,9 @@ FincLab is an event-driven system that incorporates the following features:
 
 ## Updates
 
+29 Jan 2015
+- [X]  Introduced multiprocessing to put engine and user interface into separate threads
+
 28 Dec 2015
 - [X] Seek possible integration with online brokers, such as the Interactive Brokers' API.
 

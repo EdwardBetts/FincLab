@@ -16,12 +16,14 @@ Three components of the system are dynamic - it means that you could replace the
 """
 
 import datetime as dt
-import queue
-import logging
 from portfolio import Portfolio
-from engine import Engine
-from logger import Logger
+import engine
 from config import config
+from logger import create_logger
+import multiprocessing as mp
+import time
+import os
+from dateutil import parser
 
 # Dynamically import the remaining system components
 exec("from data.{module} import {module} as DataHandler".format(module=config["components"]["data_handler"]))
@@ -29,22 +31,9 @@ exec("from execution.{module} import {module} as ExecutionHandler".format(module
 exec("from strategy.{module} import {module} as Strategy".format(module=config["components"]["strategy"]))
 
 
-# Initialise environment vars
-event_queue = queue.Queue()
-logger = Logger(logger_name="FincLab",
-                logfile='log.txt',
-                event_queue=event_queue,
-                level=logging.DEBUG)
-
-def finclab():
-    # Program parameters
-    initial_capital = 100000.0
-    heartbeat = 0.0
-    start_date = dt.datetime(2014, 1, 1, 0, 0, 0)
-    symbol_list = ['AAPL']
-
-    # Backtest
-    engine = Engine(
+def start_engine(symbol_list, data_handler, execution_handler, portfolio, strategy, event_queue, heartbeat, initial_capital, start_date):
+    """ Starts FincLab core """
+    system = engine.Engine(
         symbol_list=symbol_list,
         data_handler=DataHandler,
         execution_handler=ExecutionHandler,
@@ -55,11 +44,49 @@ def finclab():
         initial_capital=initial_capital,
         start_date=start_date
     )
-    # engine.run()
+    system.run()
+
+def start_ui(event_queue):
+    """ Start the user interface """
+    for i in range(0, 10000):
+        print("yoyo UI {}".format(i))
+        print("UI PID:", os.getpid())
+        time.sleep(2)
+
+def main():
+    # Program parameters
+    initial_capital = float(config['general']['initial_capital'])
+    heartbeat = float(config['general']['heartbeat'])
+    start_date = parser.parse(config['general']['start_date'])
+    symbol_list = config['general']['symbols'].split(' ')
+
+    # Initialise environment vars
+    event_queue = mp.Queue()
+    logger = create_logger(event_queue)
+    jobs = []
+
+    logger.info("Now starting the engine.")
+
+    # Starts the engine in a single process
+    engine_process = mp.Process(target=start_engine,
+                                args=(symbol_list, DataHandler, ExecutionHandler, Portfolio, Strategy, event_queue, heartbeat, initial_capital, start_date))
+    engine_process.daemon = True
+    engine_process.start()  # Launch engine as a separate Python program
+    jobs.append(engine_process)
+
+    # Starts the user interface
+    ui_process = mp.Process(target=start_ui, args=(event_queue, ))
+    ui_process.start()
+    jobs.append(ui_process)
+
+    start_time_ = time.time()
+
+    # Wait for all processes to finish
+    for j in jobs:
+        j.join()
+
+    print("Engine completed suecessfully and elapsed for {} seconds.".format(time.time() - start_time_))
 
 if __name__ == "__main__":
     # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    logger.info('calling temp.some_function()')
-    logger.info('done with auxiliary_module.some_function()')
-
-    finclab()
+    main()

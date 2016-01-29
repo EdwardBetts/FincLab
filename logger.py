@@ -19,63 +19,87 @@ Handlers
 import queue
 import logging
 import logging.handlers
+from config import config
 
 
-class Logger(logging.Logger):
+class FincLabQueueHandler(logging.handlers.QueueHandler):
     """
-    Base class for the logger object.
-
+    Add .type='log' to the default attributes
     """
-    def __init__(self,
-                 logger_name='FincLab',
-                 logfile=None,
-                 event_queue=None,
-                 level=logging.DEBUG
-                 ):
+
+    def __init__(self, queue):
         """
-        Initialises the FincLabLogger.
+        Initialise the FincLabQueueHandler.
 
         Parameters
         ----------
-            logger_name : string
-                The name of the logger.
-            logfile : string, default None
-                A logfile will be created given a name.
-            event_queue : queue.Queue(), default None
-                The queue to store all logs and other events.
-            level : logging.XXXX (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-                the minimum level to be reported.
+            queue : queue.Queue()
+                A passed queue
         """
-        logging.Logger.__init__(self, logger_name)
-        self.logfile = logfile
-        self.event_queue = event_queue
-        self.level = level
+        logging.handlers.QueueHandler.__init__(self, queue)
 
-        # Set log level
-        self.setLevel(self.level)
+    def prepare(self, record):
+        """
+        Override the default method to include an additional attribute .type
+        # The format operation gets traceback text into record.exc_text
+        # (if there's exception data), and also puts the message into
+        # record.message. We can then use this to replace the original
+        # msg + args, as these might be unpickleable. We also zap the
+        # exc_info attribute, as it's no longer needed and, if not None,
+        # will typically not be pickleable.
+        """
+        self.format(record)
+        record.msg = record.message
+        record.args = None
+        record.exc_info = None
+        record.type = 'LOG'
+        return record
 
-        # create formatter
-        formatter = logging.Formatter("[%(asctime)s %(levelname)s] [%(name)s.%(module)s.%(funcName)s] %(message)s",)
 
-        # create consoleHandler (default)
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(self.level)
-        console_handler.setFormatter(formatter)
-        self.addHandler(console_handler)
+def create_logger(event_queue):
+    """
+    Create a logger with multiple handles.
 
-        # create queue handler for the user interface
-        if self.event_queue is not None:
-            queue_handler = logging.handlers.QueueHandler(self.event_queue)
-            queue_handler.setLevel(self.level)
-            queue_handler.setFormatter(formatter)
-            self.addHandler(queue_handler)
+    Parameters
+    ----------
+        event_queue : queue.Queue()
+            The queue for the QueueHandler.
+    """
 
-        # create a file handler to save log
-        if self.logfile is not None:
-            file_handler = logging.FileHandler(self.logfile, mode='w')
-            file_handler.setLevel(self.level)
-            file_handler.setFormatter(formatter)
-            self.addHandler(file_handler)
+    # Load settings
+    level = logging.getLevelName(config['log']['level'])
+    log_in_user_interface = config.getboolean('log', 'log_in_user_interface')
+    save_to_file = config.getboolean('log', 'save_to_file')
+    log_filename = config['log']['log_filename']
+
+    # create a logger
+    logger = logging.getLogger("FincLab")
+    logger.setLevel(level)
+
+    # Formatter
+    formatter = logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
+                                  datefmt="%Y-%m-%d %H:%M:%S")
+    # create consoleHandler
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    # create queue handler for the user interface
+    if log_in_user_interface:
+        queue_handler = FincLabQueueHandler(event_queue)
+        queue_handler.setLevel(logging.DEBUG)
+        queue_handler.setFormatter(formatter)
+        logger.addHandler(queue_handler)
+
+    # create a file handler to save log
+    if save_to_file:
+        file_handler = logging.FileHandler(log_filename, mode='w')
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    return logger
 
 
 if __name__ == '__main__':
@@ -87,10 +111,7 @@ if __name__ == '__main__':
 
     # Initialise the event_queue logger
     event_queue = queue.Queue()
-    logger = Logger(logger_name='FincLab',
-                    logfile="log.txt",
-                    event_queue=event_queue,
-                    level=logging.DEBUG)
+    logger = create_logger(event_queue)
 
     # Testing the sys.stdout handler
     print("Testing the sys.stdout handler")
@@ -105,20 +126,11 @@ if __name__ == '__main__':
     handler = logging.StreamHandler()
     listener = logging.handlers.QueueListener(event_queue, handler)
     listener.start()
-    logger.debug('new: debug message')
-    logger.info('new: dinfo msg')
     logger.warn('new: dwarn msg')
     logger.error('new: derror msg')
+    logger.warn('new: warn msg')
+    logger.error('new: error msg')
     logger.critical('new: critical msg')
     listener.stop()
-
-    # Testing the log file handler
-    print("Testing the log file handler")
-    logger.debug('Old: debug message')
-    logger.info('Old: info msg')
-    logger.warn('Old: warn msg')
-    logger.error('Old: error msg')
-    logger.critical('Old: critical msg')
-
 
     print("Tests complete.")
