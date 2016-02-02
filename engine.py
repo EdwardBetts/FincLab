@@ -164,7 +164,7 @@ class Engine(mp.Process):
         while True:
             i += 1
             # self.logger.debug(i)
-            self.logger.info("Process ID: {}".format(os.getpid()))
+            # self.logger.info("Process ID: {}, I Love YOU!".format(os.getpid()))
             # Check if DataHandler is running --> if yes, get a mareket update
             if self.data_handler.is_running:
                 self.data_handler.update_bars()  # push latest bar and put a market event into the queue

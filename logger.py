@@ -77,25 +77,24 @@ def create_logger(event_queue):
     logger.setLevel(level)
 
     # Formatter
-    formatter = logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s",
-                                  datefmt="%Y-%m-%d %H:%M:%S")
+    formatter = logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
     # create consoleHandler
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    # console_handler = logging.StreamHandler()
+    # console_handler.setLevel(logging.DEBUG)
+    # console_handler.setFormatter(formatter)
+    # logger.addHandler(console_handler)
 
     # create queue handler for the user interface
     if log_in_user_interface:
         queue_handler = FincLabQueueHandler(event_queue)
-        queue_handler.setLevel(logging.DEBUG)
+        queue_handler.setLevel(level)
         queue_handler.setFormatter(formatter)
         logger.addHandler(queue_handler)
 
     # create a file handler to save log
     if save_to_file:
         file_handler = logging.FileHandler(log_filename, mode='w')
-        file_handler.setLevel(logging.DEBUG)
+        file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 

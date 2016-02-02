@@ -78,12 +78,21 @@ class StringWindow(Window):
         super(StringWindow,self).__init__(*args,**kwargs)
         self._strings=[]
 
-    def add_str(self,string,palette=None,effect=None):
+    def add_str(self, string, palette=None, effect=None):
         '''Add a string with optional color and effect to the list
         to be rendered'''
         #I'd rather mangle strings only on render
         #rather than store mangled data (less useful)
-        self._strings.append((string,(palette,effect)))
+        self._strings.append(
+            (string.replace("\n", ""),(palette,effect))
+        )
+        self.dirty = True
+
+    def refresh_pane(self, list_of_strings, palette=None, effect=None):
+        """
+        Refresh the entire pane with a list of strings.
+        """
+        self._strings = [(s, (palette, effect)) for s in list_of_strings]
         self.dirty = True
 
     def render_strings(self):

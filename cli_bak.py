@@ -2,13 +2,14 @@ import curses
 from curses import COLOR_WHITE, COLOR_GREEN, COLOR_BLUE, COLOR_CYAN, \
     COLOR_BLACK, COLOR_MAGENTA
 
-from ui.cli_windows import Window, StringWindow, EditorWindow, \
+from ui.cli_windows import StringWindow, EditorWindow, \
     MenuWindow, MenuTuple
 
 from itertools import cycle
 
 from random import randint
 from time import time, sleep
+import queue
 
 # can't rely on curses to find tab, enter, etc.
 KEY_TAB = 9
@@ -56,7 +57,15 @@ class OutputWindow(StringWindow):
         super(OutputWindow, self).update()
 
 
-def run():
+def run(stdscr, event_queue):
+    """ Core of the Commandline User Interface.
+
+    Parameters
+    ----------
+        stdscr : the standard screen of the curses
+        event_queue : queue.Queue()
+            Queue object to read messages from
+    """
 
     # Manual tiling
     (maxy, maxx) = stdscr.getmaxyx()
@@ -112,12 +121,12 @@ def run():
             for win in windows:
                 dirtied += win.dirty
                 win.update()
-
             # if dirtied:
             stdscr.refresh()
-            sleep(.1)  # don't be burnin up the CPU, yo.
-        elif key == KEY_TAB:
 
+            sleep(.1)  # Refresh rate = 10 times per second
+
+        elif key == KEY_TAB:
             # cycle input window
             active_window.draw_border()  # uses window default
             active_window = next(input_windows)
@@ -127,7 +136,13 @@ def run():
             active_window.process_key(key)
 
 
-if __name__ == "__main__":
+def launch_cli(event_queue):
+    """ Launch the curses user interface
+
+    Parameters
+    ----------
+        event_queue : queue.Queue()
+            The event queue for the event-driven system. Log (and message) events will be read from the queue and printed to the User Interface."""
     # Set up screen.  Try/except to make sure the terminal gets put back together no matter what happens
     try:
         # https://docs.python.org/2/howto/curses.html
@@ -144,7 +159,7 @@ if __name__ == "__main__":
         curses.init_pair(MENU_MESSAGE, COLOR_MAGENTA, COLOR_BLACK)
 
         # run while wrapped in this try/except
-        run()
+        run(stdscr, event_queue)
 
     except Exception:
         # put the terminal back in it's normal mode before raising the error
@@ -161,3 +176,5 @@ if __name__ == "__main__":
         curses.endwin()
         print('This terminal can%s display color'.format(["'t", ''][curses.has_colors()]))
 
+if __name__ == "__main__":
+    launch_cli(queue.Queue())

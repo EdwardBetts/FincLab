@@ -24,6 +24,7 @@ import multiprocessing as mp
 import time
 import os
 from dateutil import parser
+from cli import CommandLineInterface
 
 # Dynamically import the remaining system components
 exec("from data.{module} import {module} as DataHandler".format(module=config["components"]["data_handler"]))
@@ -46,12 +47,10 @@ def start_engine(symbol_list, data_handler, execution_handler, portfolio, strate
     )
     system.run()
 
-def start_ui(event_queue):
+def start_ui(log_queue, refresh_time=0.1):
     """ Start the user interface """
-    for i in range(0, 10000):
-        print("yoyo UI {}".format(i))
-        print("UI PID:", os.getpid())
-        time.sleep(2)
+    ui = CommandLineInterface(log_queue, sleep_time=refresh_time)
+    ui.run()
 
 def main():
     # Program parameters
@@ -62,7 +61,8 @@ def main():
 
     # Initialise environment vars
     event_queue = mp.Queue()
-    logger = create_logger(event_queue)
+    log_queue = mp.Queue()
+    logger = create_logger(log_queue)
     jobs = []
 
     logger.info("Now starting the engine.")
@@ -75,7 +75,7 @@ def main():
     jobs.append(engine_process)
 
     # Starts the user interface
-    ui_process = mp.Process(target=start_ui, args=(event_queue, ))
+    ui_process = mp.Process(target=start_ui, args=(log_queue, float(config['ui']['refresh_time'])))
     ui_process.start()
     jobs.append(ui_process)
 
