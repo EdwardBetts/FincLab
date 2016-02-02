@@ -6,13 +6,12 @@ from ui.cli_windows import StringWindow, EditorWindow, \
     MenuWindow, MenuTuple
 
 from itertools import cycle
+from time import sleep
+from config import config
 
-from random import randint
-from time import time, sleep
 import queue
 import logging
 import logging.handlers
-from logger import FincLabQueueHandler
 import sys
 
 
@@ -26,7 +25,7 @@ TITLE_INACTIVE = 2
 MENU_MESSAGE = 3
 
 
-class StdOutWrapper:
+class StdOutWrapper():
     """
     Can print() to curses using this class to replace sys.stdout
 
@@ -47,7 +46,7 @@ class StdOutWrapper:
 
     def write(self, txt):
         self.text += txt
-        self.text = '\n'.join(self.text.split('\n')[-30:])
+        self.text = '\n'.join(self.text.split('\n')[-1000:])
         self.updated = True
 
     def get_text(self, beg=0, end=-1):
@@ -68,42 +67,6 @@ class StdOutWrapper:
         return self.text.split('\n')[- n - 1:]
 
 
-class OutputWindow(StringWindow):
-    '''String Window that just spews out some words at random times'''
-
-    def __init__(self, *args, **kwargs):
-        super(OutputWindow, self).__init__(*args, **kwargs)
-        self.next_time = time() + randint(1, 4)
-        self.things_to_say = self.fake_chat_gen()
-
-    def fake_chat_gen(self):
-        intro = [
-            'This is a fake chat program',
-            'Press TAB to switch between windows',
-            'When you type in the editor, this window is still responsive',
-            'I could be getting information from a socket rather than a dumb loop!',
-            'Press CTRL+C to quit.',
-            'So, uh, have fun and all.',
-        ]
-
-        annoying = cycle(['this is the song that never ends',
-                          'It goes on and on my FRIEND!',
-                          'Some people started singing it not knowing what it was.',
-                          'and then they kept on singing it for-ever just because'])
-
-        for s in intro:
-            yield s
-        for s in annoying:
-            yield s
-
-    def update(self):
-        now = time()
-        if now > self.next_time:
-            self.next_time = now + randint(1, 5)
-            self.add_str(next(self.things_to_say), palette=BASIC)
-        super(OutputWindow, self).update()
-
-
 class CommandLineInterface():
     """
     Command line user interface for FincLab.
@@ -115,7 +78,7 @@ class CommandLineInterface():
         Use self.stream.write() to post strings to the output pane.
     """
 
-    def __init__(self, event_queue=queue.Queue(), sleep_time=0.1):
+    def __init__(self, event_queue=queue.Queue(), config=config):
         """
         Initialise the interface.
 
@@ -125,7 +88,8 @@ class CommandLineInterface():
                 The event queue for the event-driven system. Log (and message) events will be read from the queue and printed to the User Interface.
         """
         self.event_queue = event_queue
-        self.sleep_time = sleep_time
+        self.sleep_time = float(config['ui']['refresh_time'])
+        self.auto_scale = config.getboolean('ui', 'auto')
         self.stream = StdOutWrapper()
 
     def start_listener(self):
@@ -226,8 +190,13 @@ class CommandLineInterface():
 
         # Manual tiling
         (maxy, maxx) = self.stdscr.getmaxyx()
-        splitx = int(maxx * .3)
-        splity = int(maxy * .7)
+
+        if self.auto_scale:
+            splitx = int(maxx * .3)
+            splity = int(maxy * .7)
+        else:
+            splitx = 25
+            splity = maxy - 10
 
         # Title height
         title_height = 7
@@ -235,7 +204,7 @@ class CommandLineInterface():
         # initialize windows
         # specify Upper left corner, size, title, color scheme and border/no-border
         self.main_border = StringWindow((0, 0), (maxx, maxy), ' FincLab Ver 0.1 ', TITLE_INACTIVE)
-        self.pane_output = OutputWindow((splitx, title_height + 1), (maxx - splitx - 1, splity - title_height - 1), 'Output', TITLE_INACTIVE)
+        self.pane_output = StringWindow((splitx, title_height + 1), (maxx - splitx - 1, splity - title_height - 1), 'Output', TITLE_INACTIVE)
         self.pane_menu = MenuWindow((1, title_height + 1), (splitx - 1, splity - title_height - 1), 'Menu', TITLE_INACTIVE)
         self.pane_command = EditorWindow((splitx, splity), (maxx - splitx - 1, maxy - splity - 1), 'Type Commands...', palette=TITLE_INACTIVE, callback=self.pane_output.add_str)
         self.pane_status = StringWindow((1, splity), (splitx - 1, maxy - splity - 1), 'Status', palette=TITLE_INACTIVE)
@@ -244,11 +213,10 @@ class CommandLineInterface():
 
         # Set menu options with corrisponding callbacks
         menu_actions = [
-            MenuTuple("Say 'Hi'", (self.pane_output.add_str, 'Hello from the Menu', MENU_MESSAGE)),
-            MenuTuple('Say something else', (self.pane_output.add_str, 'From the Menu, Hello!', MENU_MESSAGE)),
-            MenuTuple('I Prefer Cyan', (curses.init_pair, TITLE_INACTIVE, COLOR_CYAN, COLOR_BLACK)),
-            MenuTuple('I Prefer Green', (curses.init_pair, TITLE_INACTIVE, COLOR_GREEN, COLOR_BLACK)),
-            MenuTuple('I Prefer Plain', (curses.init_pair, TITLE_INACTIVE, COLOR_WHITE, COLOR_BLACK))]
+            MenuTuple("Say 'Hi'", (self.pane_output.add_str, 'Hello from Mars!', MENU_MESSAGE)),
+            MenuTuple('Colour - Default', (curses.init_pair, TITLE_INACTIVE, COLOR_WHITE, COLOR_BLACK)),
+            MenuTuple('Colour - Cyan', (curses.init_pair, TITLE_INACTIVE, COLOR_CYAN, COLOR_BLACK)),
+            MenuTuple('Colour - Green', (curses.init_pair, TITLE_INACTIVE, COLOR_GREEN, COLOR_BLACK))]
         self.pane_menu.set_menu(menu_actions)
 
         # Put all the windows in a list so they can be updated together
@@ -263,6 +231,7 @@ class CommandLineInterface():
         self.main_border.add_str("  FincLab Event-Driven Live-Trading / Backtesting Engine")
         self.main_border.add_str(" ")
         self.main_border.add_str("  Author: Peter Lee (mr.peter.lee@hotmail.com)")
+        self.main_border.add_str(" ")
         self.main_border.add_str("  Instrctions:")
         self.main_border.add_str('      - Please configure program settings in the "config.ini"')
         self.main_border.add_str("      - End-of-day data will be downloaded automatically if not found.")
@@ -277,16 +246,18 @@ class CommandLineInterface():
         self.logger = logging.getLogger("FincLab.UI")
         self.logger.setLevel(level)
         formatter = logging.Formatter(fmt="%(levelname)-8s %(message)s")
+        formatter = logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
         # queue handler
-        queue_handler = FincLabQueueHandler(self.event_queue)
+        queue_handler = logging.handlers.QueueHandler(self.event_queue)
         queue_handler.setLevel(logging.DEBUG)
         queue_handler.setFormatter(formatter)
-        # file handler
-        file_handler = logging.FileHandler('ui.log', mode='w')
-        file_handler.setLevel(level)
-        file_handler.setFormatter(formatter)
-        self.logger.addHandler(file_handler)
         self.logger.addHandler(queue_handler)
+
+        # file handler
+        # file_handler = logging.FileHandler('ui.log', mode='w')
+        # file_handler.setLevel(level)
+        # file_handler.setFormatter(formatter)
+        # self.logger.addHandler(file_handler)
 
 
 if __name__ == "__main__":

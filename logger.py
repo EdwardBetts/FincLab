@@ -22,40 +22,6 @@ import logging.handlers
 from config import config
 
 
-class FincLabQueueHandler(logging.handlers.QueueHandler):
-    """
-    Add .type='log' to the default attributes
-    """
-
-    def __init__(self, queue):
-        """
-        Initialise the FincLabQueueHandler.
-
-        Parameters
-        ----------
-            queue : queue.Queue()
-                A passed queue
-        """
-        logging.handlers.QueueHandler.__init__(self, queue)
-
-    def prepare(self, record):
-        """
-        Override the default method to include an additional attribute .type
-        # The format operation gets traceback text into record.exc_text
-        # (if there's exception data), and also puts the message into
-        # record.message. We can then use this to replace the original
-        # msg + args, as these might be unpickleable. We also zap the
-        # exc_info attribute, as it's no longer needed and, if not None,
-        # will typically not be pickleable.
-        """
-        self.format(record)
-        record.msg = record.message
-        record.args = None
-        record.exc_info = None
-        record.type = 'LOG'
-        return record
-
-
 def create_logger(event_queue):
     """
     Create a logger with multiple handles.
@@ -86,7 +52,7 @@ def create_logger(event_queue):
 
     # create queue handler for the user interface
     if log_in_user_interface:
-        queue_handler = FincLabQueueHandler(event_queue)
+        queue_handler = logging.handlers.QueueHandler(event_queue)
         queue_handler.setLevel(level)
         queue_handler.setFormatter(formatter)
         logger.addHandler(queue_handler)
