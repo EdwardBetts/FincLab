@@ -2,6 +2,7 @@ import os.path
 import pandas as pd
 import numpy as np
 import queue
+import logging
 from event import MarketEvent
 from data.ABC import ABC as DataABC
 
@@ -31,6 +32,8 @@ class HistoricDataHandler(DataABC):
         self.symbol_data = {}
         self.latest_symbol_data = {}
         self.is_running = True
+
+        self.logger = logging.getLogger("FincLab.HistData")
 
         self._load_data_files()
 
@@ -94,14 +97,21 @@ class HistoricDataHandler(DataABC):
             else:
                 comb_index.union(self.symbol_data[symbol].index)
 
+        # Update the max observation number
+            self.first_obs = comb_index[0]
+            self.last_obs = comb_index[-1]
+
         # Reindex all dataframes
         for symbol in self.symbol_list:
-            self.symbol_data[symbol] = self.symbol_data[symbol].\
-                reindex(index=comb_index, method='ffill').iterrows()
+            df = self.symbol_data[symbol].reindex(index=comb_index, method='ffill')
+            self.symbol_data[symbol] = df.iterrows()
 
     def _get_new_bar(self, symbol):
         """ Yields a bar from the data feed in the sequential (timely) order. """
         for bar in self.symbol_data[symbol]:
+            current = (bar[0] - self.first_obs).days
+            total = (self.last_obs - self.first_obs).days
+            self.logger.info("[Progress]{},{}".format(current, total))
             yield bar
 
     def get_latest_bar(self, symbol):

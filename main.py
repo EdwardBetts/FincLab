@@ -40,7 +40,7 @@ def welcome_msgs(log_queue):
     """
     Print initial welcome messages to the UI
     """
-    logger.info(r'''
+    logger.info(r'''[Msg]
 FINCLAB Ver 0.1
       _____                  _   _        ____     _          _         ____
      |" ___|      ___       | \ |"|    U /"___|   |"|     U  /"\  u  U | __")u
@@ -53,15 +53,7 @@ FINCLAB Ver 0.1
         Live-Trading / Back-testing Engine
         by Peter Lee (mr.peter.lee@hotmail.com) NOT Copyrighted (2016)
 　
-Job Market Demo
----------------
-    This app applies the Moving Average Cross-Over Strategy (100- and 300-day windows) to S&P 500 companies (a total of 505 stocks as of Jan 2016) and displays trading signals (long/short/exit).
-　
-    It assumes an equal-weighted portfolio to execute trading signals and tracks the portfolio performance using 10-year end-of-day historical data. Brokerage fees (Interactive Brokers) are accounted for in the transaction costs.
-　
-    If data does not exist, the app will first fetch the list of S&P 500 constituents from Wikipedia [1] and then download their adjusted stock prices from Yahoo! Finance.
-    [1]: https://en.wikipedia.org/wiki/List_of_S%26P_500_companies
-　
+
 Current Settings
 ----------------
     Stock symbols: {symbols},  Initial capital (USD): ${initial_capital:>10}
@@ -75,6 +67,8 @@ Current Settings
         '''.format(
         **config['general'], **config['components'], **config['log'], today=time.strftime('%Y-%b-%d')
     ))
+
+
 
 def start_engine(symbol_list, data_handler, execution_handler, portfolio, strategy, event_queue, heartbeat, initial_capital, start_date):
     """ Starts FincLab core """
@@ -112,7 +106,11 @@ def main():
     welcome_msgs(log_queue)
 
     # Starts the engine in a different process
-    time.sleep(10)
+    # Countdown 10 seconds
+    for i in range(int(config['ui']['countdown']), 0, -1):
+        logger.info('[Status]countdown:{}'.format(i))
+        time.sleep(1)
+
     engine_process = mp.Process(target=start_engine,
                                 args=(symbol_list, DataHandler, ExecutionHandler, Portfolio, Strategy, event_queue, heartbeat, initial_capital, start_date))
     engine_process.daemon = True

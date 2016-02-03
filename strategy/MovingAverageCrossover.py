@@ -53,6 +53,14 @@ class MovingAverageCrossover(StrategyABC):
         # self.logger = Logger("FincLab.strategy.MAC")
         self.logger = logging.getLogger("FincLab.mac")
 
+        # Outputs description (Max 7 Lines)
+        self.name = "Moving Average Cross-Over"
+        self.description = """    Calculates moving average of 100- and 300-day windows for S&P 500 companies (a total of 505 stocks as of Jan 2016) and generates trading signals (long/short/exit).
+    Assumes an equal-weighted portfolio in execution and tracks the portfolio performance using 10-year end-of-day historical data. Brokerage fees (Interactive Brokers) are accounted for in the transaction costs.
+    If data does not exist, the app will fetch the list of S&P 500 constituents from Wikipedia [1] and then download corresponding adjusted stock prices from Yahoo! Finance.
+    [1]: https://en.wikipedia.org/wiki/List_of_S%26P_500_companies
+        """
+
     def _initialise_bought(self):
         """
         Add keys to the bought dictionary for all symbols and sets them to "OUT" - the initial status, meaning out-of-the-market..

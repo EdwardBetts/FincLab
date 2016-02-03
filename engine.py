@@ -39,7 +39,6 @@ import queue
 import time
 import datetime as dt
 import logging
-import os
 import multiprocessing as mp
 
 logger = logging.getLogger("FincLab.engine")
@@ -219,8 +218,12 @@ class Engine(mp.Process):
         """
         Starts the event-driven system.
         """
+        self.logger.info("[Status]Engine:Backtesting")
+        # Display the strategy description
+        self.logger.info("[Desc]{}".format(self.strategy.description))
         self._run_engine()
         self._output_performance()
+        self.logger.info("[Status]Engine:Completed")
         return
 
 

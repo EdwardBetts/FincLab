@@ -44,6 +44,7 @@ def create_logger(event_queue):
 
     # Formatter
     formatter = logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    formatter = logging.Formatter(fmt="%(name)-18s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
     # create consoleHandler
     # console_handler = logging.StreamHandler()
     # console_handler.setLevel(logging.DEBUG)

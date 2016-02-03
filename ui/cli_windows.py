@@ -65,7 +65,7 @@ class Window(object):
     def clear(self):
         win = self._win
         width, height = self._size
-        for i in xrange(height):
+        for i in range(height):
           win.addstr(i,0,' '*(width-2))
         self.dirty = True
 
@@ -99,13 +99,13 @@ class StringWindow(Window):
         width, height = self._size
         width -= 2  #for border
         height -= 2
-        strings_and_colors= self._strings[-height:]
+        strings_and_colors = self._strings[-height:]
         frame = []
 
         #break list of strings up into line wrapped pieces
         for string, color in strings_and_colors:
           old = 0
-          piece = string[old:old+width]
+          piece = string[old:old + width]
           while piece:
             frame.append((piece.ljust(width),color))
             old += width
@@ -115,7 +115,7 @@ class StringWindow(Window):
           try:
             #awkward iterating backwards through two containers
             # of different sizes...
-            self._addstr(i+1,1,string,palette=palette, effect=effect)
+            self._addstr(i + 1, 1, string, palette=palette, effect=effect)
           except IndexError:
             pass
 
