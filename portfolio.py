@@ -1,3 +1,8 @@
+import pandas as pd
+
+from event import OrderEvent
+from performance import create_sharpe_ratio, create_drawdowns
+
 """
 Class : Portfolio
 -----------------
@@ -29,12 +34,6 @@ Assumptions
 A predetermined fixed quantity size per order, inrrespective of cash held.
 Does not handle position sizing.
 """
-
-
-import pandas as pd
-
-from event import OrderEvent
-from performance import create_sharpe_ratio, create_drawdowns
 
 
 class Portfolio(object):

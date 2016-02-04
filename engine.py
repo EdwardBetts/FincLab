@@ -1,3 +1,10 @@
+import queue
+import time
+import logging
+import multiprocessing as mp
+import feeder.StockSelection
+from dateutil import parser
+
 """
 Class: Event-Driven Engine
 
@@ -34,13 +41,6 @@ Side loop : Some events are processed by multiple targets.
     MarketEvent --> Portfolio object (to reindex the time and update positions in the portfolio)
 
 """
-
-import queue
-import time
-import datetime as dt
-import logging
-import multiprocessing as mp
-
 logger = logging.getLogger("FincLab.engine")
 
 
@@ -50,15 +50,12 @@ class Engine(mp.Process):
     """
 
     def __init__(self,
-                 symbol_list,
+                 config,
                  data_handler,
                  execution_handler,
                  portfolio,
                  strategy,
-                 event_queue=queue.Queue(),
-                 heartbeat=0,
-                 initial_capital=1000000,
-                 start_date=dt.datetime(1990, 1, 1, 0, 0, 0)):
+                 event_queue=queue.Queue()):
         """
         Initialises the Engine object.
 
@@ -66,8 +63,8 @@ class Engine(mp.Process):
         ----------
         data_folder : string, default "~/Work/FinanceData/Stock/US/"
             The full path to the data directory. Supports .csv, .xls, .xlsx and .dta formats.
-        symbol_list : list of strings
-            Each string in the list is the symbol (ticker) for the financial asset.
+        config : configparser()
+            The system configuration object.
         initial_capital : int, default 1000000
             The openning balance for the portfolio. The currency is assumed to be identical to that of price quote of the underlying asset.
         heartbeat : int (seconds), default 0
@@ -86,16 +83,23 @@ class Engine(mp.Process):
             Generates signals based on market data.
         """
 
-        self.symbol_list = symbol_list
-        self.initial_capital = initial_capital
-        self.heartbeat = heartbeat
-        self.start_date = start_date
+        self.config = config
+        self.initial_capital = float(self.config['general']['initial_capital'])
+        self.heartbeat = float(self.config['engine']['heartbeat'])
         self.data_handler_cls = data_handler
         self.execution_handler_cls = execution_handler
         self.portfolio_cls = portfolio
         self.strategy_cls = strategy
         self.event_queue = event_queue
 
+        self.start_date = parser.parse(self.config['data']['start_date'])
+        end_date = self.config['data']['end_date']
+        if end_date.upper() == "NONE":
+            self.end_date = None
+        else:
+            self.end_date = parser.parse(self.end_date)
+
+        self.symbol_list = []
         # Initialise a logger
         self.logger = logging.getLogger("FincLab.Engine")
         self.logger.propagate = True
@@ -104,9 +108,6 @@ class Engine(mp.Process):
         self.num_orders = 0  # Number of processed OrderEvents
         self.num_fills = 0  # Number of process FillEvents
         self.num_strats = 1  # Number of strategies
-
-        # Attach system components to internal members
-        self._initialise_system_components()
 
     def _initialise_system_components(self):
         """
@@ -214,10 +215,31 @@ class Engine(mp.Process):
         self.logger.info("Number of Orders: {}".format(self.num_orders))
         self.logger.info("Number of Fills: {}".format(self.num_fills))
 
+    def prepare_data(self):
+        """
+        Start to prepare the datasets
+        """
+
+        prepare_data = feeder.StockSelection.PrepareData(
+            data_folder=self.config['data']['data_folder'],
+            index_names=self.config['data']['index'],
+            symbols=self.config['data']['symbols'].split(' '),
+            start_date=self.start_date,
+            end_date=self.end_date)
+
+        self.symbol_list = prepare_data.get_symbol_list()
+
     def run(self):
         """
         Starts the event-driven system.
         """
+        self.logger.info("[Status]Engine:Prepare Data")
+        self.prepare_data()
+
+        # Attach system components to internal members
+        self.logger.info("[Status]Engine:Initialising")
+        self._initialise_system_components()
+
         self.logger.info("[Status]Engine:Backtesting")
         # Display the strategy description
         self.logger.info("[Desc]{}".format(self.strategy.description))
@@ -228,15 +250,31 @@ class Engine(mp.Process):
 
 
 if __name__ == '__main__':
-    import sys
+    from config import config
+    from feeder.HistoricData import HistoricData as DataHandler
+    from execution.SimulatedExecutionHandler import SimulatedExecutionHandler as ExecutionHandler
+    from strategy.MovingAverageCrossover import MovingAverageCrossover as Strategy
+    from portfolio import Portfolio
+    from logger import create_logger
+    import logging.handlers
+    event_queue = queue.Queue()
+    heartbeat = 0
+    initial_capital = 100000
 
-    def progress_bar(end_val, bar_length=50):
-        for i in range(0, end_val):
-            percent = float(i + 1) / end_val
-            hashes = '#' * int(round(percent * bar_length))
-            spaces = ' ' * (bar_length - len(hashes))
-            sys.stdout.write("\rbacktest: [{0}] {1}%".format(hashes + spaces, int(round(percent * 100))))
-            time.sleep(0.1)
-            sys.stdout.flush()
+    log_queue = queue.Queue()
+    logger = create_logger(log_queue)
+    logger.setLevel(logging.DEBUG)
+    listener = logging.handlers.QueueListener(log_queue, logging.StreamHandler())
+    listener.start()
 
-    progress_bar(100)
+    system = Engine(
+        config=config,
+        data_handler=DataHandler,
+        execution_handler=ExecutionHandler,
+        portfolio=Portfolio,
+        strategy=Strategy,
+        event_queue=event_queue
+    )
+    system.run()
+    listener.stop()
+    print("Complete.")

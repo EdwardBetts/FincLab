@@ -1,3 +1,9 @@
+import datetime as dt
+import numpy as np
+from strategy.ABC import ABC as StrategyABC
+from event import SignalEvent
+import logging
+
 """
 Strategy: Moving Average Crossover (MAC)
 ----------------------------------------
@@ -12,12 +18,6 @@ It then calculates both the short and long period simple moving averages. The ru
 
 This logic is handled by placing a "SignalEvent" object on the events queue in each of the respective situations, and then updating the "bought" attribute (per symbol) to be "LONG" or "OUT", respectively. Since this is a long-only strategy, we won't be considering "SHORT" positions.
 """
-
-import datetime as dt
-import numpy as np
-from strategy.ABC import ABC as StrategyABC
-from event import SignalEvent
-import logging
 
 
 class MovingAverageCrossover(StrategyABC):
@@ -56,9 +56,6 @@ class MovingAverageCrossover(StrategyABC):
         # Outputs description (Max 7 Lines)
         self.name = "Moving Average Cross-Over"
         self.description = """    Calculates moving average of 100- and 300-day windows for S&P 500 companies (a total of 505 stocks as of Jan 2016) and generates trading signals (long/short/exit).
-    Assumes an equal-weighted portfolio in execution and tracks the portfolio performance using 10-year end-of-day historical data. Brokerage fees (Interactive Brokers) are accounted for in the transaction costs.
-    If data does not exist, the app will fetch the list of S&P 500 constituents from Wikipedia [1] and then download corresponding adjusted stock prices from Yahoo! Finance.
-    [1]: https://en.wikipedia.org/wiki/List_of_S%26P_500_companies
         """
 
     def _initialise_bought(self):

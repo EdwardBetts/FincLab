@@ -22,13 +22,13 @@ import logging.handlers
 from config import config
 
 
-def create_logger(event_queue):
+def create_logger(log_queue):
     """
     Create a logger with multiple handles.
 
     Parameters
     ----------
-        event_queue : queue.Queue()
+        log_queue : queue.Queue()
             The queue for the QueueHandler.
     """
 
@@ -53,7 +53,7 @@ def create_logger(event_queue):
 
     # create queue handler for the user interface
     if log_in_user_interface:
-        queue_handler = logging.handlers.QueueHandler(event_queue)
+        queue_handler = logging.handlers.QueueHandler(log_queue)
         queue_handler.setLevel(level)
         queue_handler.setFormatter(formatter)
         logger.addHandler(queue_handler)
@@ -76,8 +76,8 @@ if __name__ == '__main__':
     # logging.warning('And this too!')
 
     # Initialise the event_queue logger
-    event_queue = queue.Queue()
-    logger = create_logger(event_queue)
+    log_queue = queue.Queue()
+    logger = create_logger(log_queue)
 
     # Testing the sys.stdout handler
     print("Testing the sys.stdout handler")
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     # Testing the queue handler
     print("Testing the queue handler")
     handler = logging.StreamHandler()
-    listener = logging.handlers.QueueListener(event_queue, handler)
+    listener = logging.handlers.QueueListener(log_queue, handler)
     listener.start()
     logger.warn('new: dwarn msg')
     logger.error('new: derror msg')

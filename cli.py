@@ -2,7 +2,7 @@ import curses
 from curses import COLOR_WHITE, COLOR_GREEN, COLOR_BLUE, COLOR_CYAN, COLOR_BLACK, COLOR_MAGENTA
 
 from ui.cli_windows import Window, StringWindow, EditorWindow, MenuWindow, MenuTuple
-
+import sys
 from itertools import cycle
 from time import sleep
 from config import config
@@ -10,7 +10,6 @@ from config import config
 import queue
 import logging
 import logging.handlers
-import sys
 
 
 # can't rely on curses to find tab, enter, etc.
@@ -21,6 +20,8 @@ BASIC = 0  # not editable
 TITLE_ACTIVE = 1
 TITLE_INACTIVE = 2
 MENU_MESSAGE = 3
+
+logger = logging.getLogger("FincLab.UI")
 
 
 class StdOutWrapper():
@@ -79,6 +80,7 @@ class StdOutWrapper():
 
         Row separater is \n by default.
         """
+        self.new_updates = False
         return '\n'.join(self.text.split('\n')[beg:end])
 
     def get_last_rows(self, n=20):
@@ -86,6 +88,7 @@ class StdOutWrapper():
         Return a list. Retreive specific rows from the stream.
 
         """
+        self.updated = False
         return self.text.split('\n')[- n - 1:]
 
 
@@ -100,7 +103,7 @@ class CommandLineInterface():
         Use self.stream.write() to post strings to the output pane.
     """
 
-    def __init__(self, log_queue=queue.Queue(), event_queue=queue.Queue(), config=config):
+    def __init__(self, log_queue, config=config):
         """
         Initialise the interface.
 
@@ -110,18 +113,17 @@ class CommandLineInterface():
                 The event queue for the event-driven system. Log (and message) events will be read from the queue and printed to the User Interface.
         """
         self.log_queue = log_queue
-        self.event_queue = event_queue
         self.sleep_time = float(config['ui']['refresh_time'])
         self.auto_scale = config.getboolean('ui', 'auto')
         self.stream = StdOutWrapper()
         self.config = config
+        self.logger = logging.getLogger("FincLab.UI")
 
     def start_log_listener(self):
         """ Start the logger listener to take log events from the queue.
         Only starts after initialising the UI.
         """
         # Log listener
-
         handler = logging.StreamHandler()
         formatter = logging.Formatter(fmt="%(name)-18s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
         handler.setFormatter(formatter)
@@ -227,6 +229,7 @@ class CommandLineInterface():
             # Starts the logger listener
             self.start_log_listener()  # start the listener to take log events from the queue (only after the UI has initialised)
 
+            self.logger.debug("Commandline Interface successfully initialised.")
             # Ininite loop to refresh the interface
             self._refresh()
 
@@ -351,6 +354,41 @@ class CommandLineInterface():
         # self.logger.addHandler(file_handler)
 
 
-if __name__ == "__main__":
-    ui = CommandLineInterface(queue.Queue())
+def start_ui(log_queue, config):
+    """ Start the user interface """
+    ui = CommandLineInterface(log_queue, config=config)
     ui.run()
+
+
+if __name__ == "__main__":
+    from config import config
+    import multiprocessing as mp
+    from logger import create_logger
+    log_queue = queue.Queue()
+    logger = create_logger(log_queue)
+    logger.setLevel(logging.DEBUG)
+
+    logger = logging.getLogger("FincLab")
+    # Formatter
+    formatter = logging.Formatter(fmt="%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    formatter = logging.Formatter(fmt="%(name)-18s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    # create consoleHandler
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+    # create queue handler for the user interface
+    queue_handler = logging.handlers.QueueHandler(log_queue)
+    queue_handler.setLevel(logging.DEBUG)
+    queue_handler.setFormatter(formatter)
+    logger.addHandler(queue_handler)
+
+    # Starts the user interface
+    ui_process = mp.Process(target=start_ui, args=(log_queue, config))
+    ui_process.start()
+
+    logger.info("yoyoyo")
+    logger.info("yoyoyo")
+    logger.info("yoyoyo")
+

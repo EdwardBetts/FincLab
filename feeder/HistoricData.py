@@ -4,10 +4,10 @@ import numpy as np
 import queue
 import logging
 from event import MarketEvent
-from data.ABC import ABC as DataABC
+from feeder.ABC import ABC as DataABC
 
 
-class HistoricDataHandler(DataABC):
+class HistoricData(DataABC):
     """
     The HistoricDataHandler imports a number of data formats, including Excel files (both .xls and .xlsx), comma-separated variables (CSV) files and Stata formats (.dta). It searches for the datafile begins with the requested "symbol" (e.g., "GOOG.xlsx") in the data_folder, and provides an interface for other system components to obtain historical bars in a manner that is identical to live trading interface.
     Assume that the data is taken from Yahoo, and its format will be respected.
