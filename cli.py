@@ -124,7 +124,7 @@ class CommandLineInterface():
         Only starts after initialising the UI.
         """
         # Log listener
-        handler = logging.StreamHandler()
+        handler = logging.StreamHandler(self.stream)
         formatter = logging.Formatter(fmt="%(name)-18s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
         handler.setFormatter(formatter)
         self.listener = logging.handlers.QueueListener(self.log_queue, handler)
@@ -205,8 +205,8 @@ class CommandLineInterface():
         # Set up screen.  Try/except to make sure the terminal gets put back together no matter what happens
         try:
 
-            sys.stdout = self.stream
-            sys.stderr = self.stream
+            # sys.stdout = self.stream
+            # sys.stderr = self.stream
 
             self.stdscr = curses.initscr()
             curses.start_color()
@@ -246,9 +246,9 @@ class CommandLineInterface():
             curses.echo()
             curses.endwin()
 
-            sys.stdout = sys.__stdout__
-            sys.stderr = sys.__stderr__
-            sys.stdout.write(self.stream.get_text())
+            # sys.stdout = sys.__stdout__
+            # sys.stderr = sys.__stderr__
+            # sys.stdout.write(self.stream.get_text())
 
     def create_progress_bar(self, value, max_value, bar_length=50):
         # Bar
