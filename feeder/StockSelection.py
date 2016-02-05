@@ -94,10 +94,11 @@ class PrepareData():
             2. If data is outdated, update the data
         """
 
-        self.logger.info("Loading data for {} assets...".format(len(self.symbol_list)))
         # Formulate the list of stocks based on all critiera
         if self.index_names is not None:
             self.get_index_constituents()
+
+        self.logger.info("Loading data for {} assets...".format(len(self.symbol_list)))
 
         # Check if data exists --> download from source if necessary
         for i, symbol in enumerate(self.symbol_list):
