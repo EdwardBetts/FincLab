@@ -27,7 +27,7 @@ class MovingAverageCrossover(StrategyABC):
     The attribute "bought" is used to tell the Strategy when the backtest is actually "in the market". Entry signals are only generated if this is "OUT" and exit signals are only ever generated if this is "LONG" or "SHORT".
     """
 
-    def __init__(self, bars, event_queue, short_window=100, long_window=400):
+    def __init__(self, bars, event_queue, short_window=30, long_window=100):
         """
         Initialises the Moving Average Crossover Strategy.
 
@@ -50,8 +50,7 @@ class MovingAverageCrossover(StrategyABC):
         self.bought = self._initialise_bought()
 
         # Logger
-        # self.logger = Logger("FincLab.strategy.MAC")
-        self.logger = logging.getLogger("FincLab.mac")
+        self.logger = logging.getLogger("FincLab.MAC")
 
         # Outputs description (Max 7 Lines)
         self.name = "Moving Average Cross-Over"

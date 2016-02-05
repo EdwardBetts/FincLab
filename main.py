@@ -58,7 +58,6 @@ FINCLAB Ver 0.1
         Live-Trading / Back-testing Engine
         by Peter Lee (mr.peter.lee@hotmail.com) NOT Copyrighted (2016)
 　
-
 Settings
 --------
     Initial capital (USD): ${initial_capital:>10}
@@ -68,13 +67,13 @@ Settings
 System
 ------
 Strategy : {strategy}
-
+　
 Data Handler : {data_handler}
     If data does not exist, the app will fetch the list of S&P 500 constituents from Wikipedia [1] and then download corresponding adjusted stock prices from Yahoo! Finance.
         [1]: https://en.wikipedia.org/wiki/List_of_S%26P_500_companies
-
+　
 Execution Handler: {execution_handler}
-
+　
 Portfolio: Equal Weighted
     Assumes an equal-weighted portfolio in execution and tracks  the portfolio performance using 10-year end-of-day historical data. brokerage fees (interactive brokers) are accounted for in the transaction costs.
         '''.format(
