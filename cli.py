@@ -2,7 +2,6 @@ import curses
 from curses import COLOR_WHITE, COLOR_GREEN, COLOR_BLUE, COLOR_CYAN, COLOR_BLACK, COLOR_MAGENTA
 
 from ui.cli_windows import Window, StringWindow, EditorWindow, MenuWindow, MenuTuple
-import sys
 from itertools import cycle
 from time import sleep
 from config import config
@@ -70,7 +69,7 @@ class StdOutWrapper():
             self.progress = [float(x) for x in txt[30:].split(',')]
             self.new_progress_bar = True
         else:
-            self.text += txt
+            self.text += txt[8:] + "\n"
             self.text = '\n'.join(self.text.split('\n')[-1000:])
             self.new_updates = True
 
@@ -160,12 +159,14 @@ class CommandLineInterface():
                     self.pane_status.clear()
                     # Engine tag
                     if self.stream.status.get("Engine"):
-                        self.pane_status._addstr(1, 1, "Engine : {}".format(self.stream.status.get("Engine", 'n/a')))
+                        self.pane_status._addstr(1, 1, "Engine: {}".format(self.stream.status.get("Engine", 'n/a')))
                     else:
                         self.pane_status._addstr(1, 1, "Countdown: {} secs".format(self.stream.status.get("countdown", 'n/a')))
+                    # Display datetime of the processing bar
+                    if self.stream.status.get("current_datetime") and self.stream.status.get("Engine", 'n/a') == "Backtesting":
+                        self.pane_status._addstr(2, 1, "Processing: {}".format(self.stream.status.get("current_datetime", 'n/a')))
                     # Components
-                    self.pane_status._addstr(3, 1, "Components:")
-                    self.pane_status._addstr(4, 1, "-----------")
+                    self.pane_status._addstr(4, 1, "Components:")
                     self.pane_status._addstr(5, 1, "  {}".format(self.config['components']['strategy']))
                     self.pane_status._addstr(6, 1, "  {}".format(self.config['components']['data_handler']))
                     self.pane_status._addstr(7, 1, "  {}".format(self.config['components']['execution_handler']))
@@ -194,11 +195,14 @@ class CommandLineInterface():
                 self.active_window.draw_border()  # uses window default
                 self.active_window = next(self.input_windows)
                 self.active_window.draw_border(TITLE_ACTIVE)
+            elif key == 27:  # ESC or ALT
+                # Exit
+                break
             else:
                 # every other key gets processed by the active input window
                 self.active_window.process_key(key)
 
-    def run(self):
+    def run(self, stdscr):
         """
         Launch the interface.
         """
@@ -208,10 +212,11 @@ class CommandLineInterface():
             # sys.stdout = self.stream
             # sys.stderr = self.stream
 
-            self.stdscr = curses.initscr()
+            curses.cbreak()  # enable key press asynch
+            # self.stdscr = curses.initscr()
+            self.stdscr = stdscr
             curses.start_color()
             curses.noecho()  # let input windows handle drawing characters to the screen
-            curses.cbreak()  # enable key press asynch
             self.stdscr.nodelay(1)  # enable immediate time out (don't wait for keys at all)
             self.stdscr.keypad(1)  # enable enter, tab, and other keys
 
@@ -229,7 +234,6 @@ class CommandLineInterface():
             # Starts the logger listener
             self.start_log_listener()  # start the listener to take log events from the queue (only after the UI has initialised)
 
-            self.logger.debug("Commandline Interface successfully initialised.")
             # Ininite loop to refresh the interface
             self._refresh()
 
@@ -259,7 +263,7 @@ class CommandLineInterface():
         hashes = '#' * int(round(percent * bar_length))
         spaces = ' ' * (bar_length - len(hashes))
 
-        return ("[{0}] {1:>3}%".format(hashes + spaces, int(round(percent * 100))))
+        return ("[{}] {:>5.1f}%".format(hashes + spaces, percent * 100))
 
     def update_progress_bar(self, value, max_value):
         """ Update the progress bar which is located at the bottom of the UI
@@ -273,7 +277,7 @@ class CommandLineInterface():
         """
         # Define progress bar (width of screen is (maxx - 2), height of screen is (maxy -2)
         progress_title = "Progress "
-        bar = self.create_progress_bar(value, max_value, self.maxx - len(progress_title) - 4 - 7)  # 4->borders 5->digits at right end of the bar
+        bar = self.create_progress_bar(value, max_value, self.maxx - len(progress_title) - 4 - 9)  # 4->borders 9->digits at right end of the bar
         self.main_border._addstr(self.maxy - 2, 2, progress_title + bar)
         self.main_border.dirty = True
 

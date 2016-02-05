@@ -34,6 +34,7 @@ class HistoricData(DataABC):
         self.is_running = True
 
         self.logger = logging.getLogger("FincLab.HistData")
+        self.logger.propagate = True
 
         self._load_data_files()
 
@@ -57,7 +58,7 @@ class HistoricData(DataABC):
             index_col=0,
             parse_dates=True,
             names=['datetime', 'open', 'high', 'low', 'close', 'volume', 'adj_close']
-        ).sort()
+        ).sort_index()
 
     def _load_data_stata(self, symbol, file_path):
         """ Load .dta data files """
@@ -68,7 +69,7 @@ class HistoricData(DataABC):
             index_col=0,
             parse_dates=True,
             names=['datetime', 'open', 'high', 'low', 'close', 'volume', 'adj_close']
-        ).sort()
+        ).sort_index()
 
     def _load_data_files(self):
         """
@@ -110,7 +111,7 @@ class HistoricData(DataABC):
         """ Yields a bar from the data feed in the sequential (timely) order. """
         for bar in self.symbol_data[symbol]:
             current = (bar[0] - self.first_obs).days
-            total = (self.last_obs - self.first_obs).days
+            total = (self.last_obs - self.first_obs).days + 1
             self.logger.info("[Progress]{},{}".format(current, total))
             yield bar
 
@@ -224,7 +225,7 @@ class HistoricData(DataABC):
 
 if __name__ == "__main__":
     print("Debugging...")
-    data_handler = HistoricDataHandler(
+    data_handler = HistoricData(
         event_queue=queue.Queue(),
         symbol_list=['AAPL']
     )

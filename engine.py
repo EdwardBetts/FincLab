@@ -61,16 +61,8 @@ class Engine(mp.Process):
 
         Parameters
         ----------
-        data_folder : string, default "~/Work/FinanceData/Stock/US/"
-            The full path to the data directory. Supports .csv, .xls, .xlsx and .dta formats.
         config : configparser()
             The system configuration object.
-        initial_capital : int, default 1000000
-            The openning balance for the portfolio. The currency is assumed to be identical to that of price quote of the underlying asset.
-        heartbeat : int (seconds), default 0
-            The duration of heartbeat in seconds. Heartbeat is the period the engine hibernates before it checks for market updates.
-        start_date : datetime(), default datetime.datetime(1990,1,1,0,0,0) (1990-Jan-1)
-            The start datetime since when the strategy begins to evaluate.
         data_handler : DataHandler (class) or an inherited class, default HistoricCSVDataHandler
             Handles the market data feed.
         execution_handler : ExecutionHandler (Class) or an inherited class, default SimulatedExecutionHandler
@@ -114,11 +106,13 @@ class Engine(mp.Process):
         Attaches the trading objects (DataHandler, Strategy, Portfolio and ExecutionHandler) to internal members.
         """
 
-        self.logger.info("Creating DataHandler, Strategy, Portfolio and ExecutionHandler.")
+        self.logger.info("Initialising system components: ")
+        self.logger.info("    data handler, strategy, portfolio and execution handler...")
 
         self.data_handler = self.data_handler_cls(
             event_queue=self.event_queue,
-            symbol_list=self.symbol_list
+            symbol_list=self.symbol_list,
+            data_folder=self.config['data']['data_folder']
         )
 
         self.strategy = self.strategy_cls(
@@ -182,6 +176,7 @@ class Engine(mp.Process):
                         if event.type == 'MARKET':
                             self.strategy.calculate_signals(event)
                             self.portfolio.update_timeindex(event)
+                            self.logger.info("[Status]current_datetime:{}".format(event.datetime.strftime("%Y-%m-%d")))
                         elif event.type == 'SIGNAL':
                             self.num_signals += 1
                             self.portfolio.update_signal(event)
@@ -219,6 +214,7 @@ class Engine(mp.Process):
         """
         Start to prepare the datasets
         """
+        self.logger.info("Preparing datasets for backtesting...")
 
         prepare_data = feeder.StockSelection.PrepareData(
             data_folder=self.config['data']['data_folder'],

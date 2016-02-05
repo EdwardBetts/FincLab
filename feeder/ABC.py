@@ -1,3 +1,5 @@
+from abc import ABCMeta, abstractmethod
+
 """
 Class: Data Handler
 
@@ -30,16 +32,6 @@ Specific example subclasses, could include:
 """
 
 
-from abc import ABCMeta, abstractmethod
-import os
-import os.path
-import pandas as pd
-import numpy as np
-import queue
-
-from event import MarketEvent
-
-
 class ABC(object):
     """
     DataHandler is an abstract base class (ABC) providing an interface for all inherited data handlers (both live and historic). The goal of a (derived) DataHandler object is to output a generated set of bars (OHLCVI) for each symbol requested.
@@ -48,8 +40,6 @@ class ABC(object):
     ----------------------------
     event_queue : queue.Queue()
         Event queue object. Default as FIFO queue.
-    data_folder : string, default "~/Work/FinanceData/Stock/US/"
-        The path to data folder.
     symbol_list : a list of strings.
         The DataHandler will fetch data for the list of symbols (tickers).
     """

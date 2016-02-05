@@ -14,6 +14,7 @@ from execution.SimulatedExecutionHandler import SimulatedExecutionHandler as Exe
 from strategy.MovingAverageCrossover import MovingAverageCrossover as Strategy
 import logging
 import logging.handlers
+import curses
 
 
 """
@@ -103,7 +104,7 @@ def start_engine(config, data_handler, execution_handler, portfolio, strategy, e
 def start_ui(log_queue, config):
     """ Start the user interface """
     ui = CommandLineInterface(log_queue, config=config)
-    ui.run()
+    curses.wrapper(ui.run)
 
 
 if __name__ == "__main__":
@@ -143,7 +144,7 @@ if __name__ == "__main__":
     for job in jobs:
         job.join()
 
-    logger.info("Engine completed suecessfully in {:.2d} seconds.".format(time.time() - start_time_))
+    logger.info("Engine completed suecessfully in {:.2f} seconds.".format(time.time() - start_time_))
 
     # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
