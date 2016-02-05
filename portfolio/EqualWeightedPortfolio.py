@@ -1,14 +1,13 @@
 import pandas as pd
+from portfolio.Portfolio import Portfolio
 
 from event import OrderEvent
 from performance import create_sharpe_ratio, create_drawdowns
 
 """
-Class : Portfolio
+Class : Equal Weighted Portfolio
 -----------------
-A "first go" Portfolio object when testing out new strategies. Other Portfolios can be derived from it and override sections to add more complexity.
-
-The Portfolio object must be able to handle SignalEvent objects, generate OrderEvent objects and interpret FillEvent objects to update positions.
+The equal weighted portfolio assumes to always invest equally among assets, and is based on the Portfolio class.
 
 Attributes
 ----------
@@ -23,31 +22,15 @@ current_holdings : dict
 
 all_holdings : list of dict
     Stores all historical symbol holdings, plus a few more accounts
-
-Methods
--------
-update_timeindex() : handles the new holdings tracking.
-    It firstly obtains the latest prices from the market data handler, and creates a new dictionary of symbols to represent the current positions, by setting the "new" positions equal to the "current" positions. The current positions are only modified when a FillEvent is received.
-
-Assumptions
------------
-A predetermined fixed quantity size per order, inrrespective of cash held.
-Does not handle position sizing.
 """
 
 
-class Portfolio(object):
+class EqualWeightedPortfolio(Portfolio):
     """
-    The Portfolio class handles the positions and market value of all instruments at a resolution of a "bar", i.e., secondly, minutely, 5-min, 30-min or EOD.
-
-    The initialisation of the Portfolio object requires access to the bars DataHandler, the events Event Queue, a start datetime stamp and an initial capital value (defaulting to $100,000).
-
-    The positions DataFrame stores a time-index of the quantity of positions held.
-
-    The holdings DataFrame stores the cash and total market holdings value of each symbol for a particular time-index, as well as the percentage change in portfolio total across bars.
+    The Equal Weighted Portfolio class.
     """
 
-    def __init__(self, bars, event_queue, start_date, initial_capital=1000000.0):
+    def __init__(self, bars, event_queue, config):
         """
         Initialises the portfolio with bars, an event queue,  a starting datetime index and initial capital (USD unless otherwise stated).
 
@@ -55,17 +38,18 @@ class Portfolio(object):
         ----------
         bars : The DataHandler object with current market data
         event_queue : The Event Queue object
-        start_date : datetime.datetime()
-            The start date (bar) of the portfolio
-        initial_capital : float, default 1,000,000
-            The starting capital in dollars
+        config : the configparser object
         """
 
         self.bars = bars
         self.event_queue = event_queue
         self.symbol_list = self.bars.symbol_list
-        self.start_date = start_date
-        self.initial_capital = initial_capital
+        self.config = config
+
+        self.initial_capital = float(self.config['general']['initial_capital'])
+
+        self.start_date = self.config.dt_start_date
+        self.end_date = self.config.dt_end_date
 
         # Construct all_positions
         self.all_positions = self.construct_all_positions()
@@ -151,7 +135,7 @@ class Portfolio(object):
 
         for s in self.symbol_list:
             # Approximation to the real value
-            market_value = self.current_positions[s] * self.bars.get_latest_bar_value(s, "adj_close")
+            market_value = self.current_positions[s] * self.bars.get_latest_bar_value(s, "Adj Close")
             dh[s] = market_value
             dh['total'] += market_value
 
@@ -203,7 +187,7 @@ class Portfolio(object):
             fill_dir = -1
 
         # Update holdings list with new quantities
-        fill_cost = self.bars.get_latest_bar_value(fill_event.symbol, "adj_close")
+        fill_cost = self.bars.get_latest_bar_value(fill_event.symbol, "Adj Close")
         cost = fill_dir * fill_cost * fill_event.quantity
 
         self.current_holdings[fill_event.symbol] += cost
@@ -300,4 +284,3 @@ class Portfolio(object):
 
 if __name__ == '__main__':
     print('Debugging...')
-

@@ -14,6 +14,7 @@ FincLab is an event-driven system that incorporates the following features:
 
 
 ## To-do list
+- [ ] Add better time zone support in config.py
 - [ ] Place logger in the event queue so that the user interface can be easily separated from the main thread if needed (using multiprocessing).
 - [ ] Add a commandline interface using curses
 - [ ] Sequentially fetch histoical prices of all A shares using Pandas datareader.

@@ -1,4 +1,3 @@
-from portfolio import Portfolio
 import engine
 from config import config
 from logger import create_logger
@@ -9,9 +8,11 @@ from cli import CommandLineInterface
 # exec("from feeder.{module} import {module} as DataHandler".format(module=config["components"]["data_handler"]))
 # exec("from execution.{module} import {module} as ExecutionHandler".format(module=config["components"]["execution_handler"]))
 # exec("from strategy.{module} import {module} as Strategy".format(module=config["components"]["strategy"]))
+# exec("from portfolio.{module} import {module} as Portfolio".format(module=config["components"]["portfolio"]))
 from feeder.HistoricData import HistoricData as DataHandler
 from execution.SimulatedExecutionHandler import SimulatedExecutionHandler as ExecutionHandler
 from strategy.MovingAverageCrossover import MovingAverageCrossover as Strategy
+from portfolio.Portfolio import Portfolio
 import logging
 import logging.handlers
 import curses

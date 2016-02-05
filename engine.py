@@ -2,8 +2,8 @@ import queue
 import time
 import logging
 import multiprocessing as mp
-import feeder.StockSelection
-from dateutil import parser
+import feeder.PrepareData
+
 
 """
 Class: Event-Driven Engine
@@ -84,12 +84,8 @@ class Engine(mp.Process):
         self.strategy_cls = strategy
         self.event_queue = event_queue
 
-        self.start_date = parser.parse(self.config['data']['start_date'])
-        end_date = self.config['data']['end_date']
-        if end_date.upper() == "NONE":
-            self.end_date = None
-        else:
-            self.end_date = parser.parse(self.end_date)
+        self.start_date = config.dt_start_date
+        self.end_date = config.dt_end_date
 
         self.symbol_list = []
         # Initialise a logger
@@ -106,8 +102,7 @@ class Engine(mp.Process):
         Attaches the trading objects (DataHandler, Strategy, Portfolio and ExecutionHandler) to internal members.
         """
 
-        self.logger.info("Initialising system components: ")
-        self.logger.info("    data handler, strategy, portfolio and execution handler...")
+        self.logger.info("Initialising system components: data feeder, strategy, portfolio and execution handler...")
 
         self.data_handler = self.data_handler_cls(
             config=self.config,
@@ -123,8 +118,7 @@ class Engine(mp.Process):
         self.portfolio = self.portfolio_cls(
             bars=self.data_handler,
             event_queue=self.event_queue,
-            start_date=self.start_date,
-            initial_capital=self.initial_capital
+            config=self.config
         )
 
         self.execution_handler = self.execution_handler_cls(
@@ -159,6 +153,7 @@ class Engine(mp.Process):
             i += 1
             # self.logger.debug(i)
             # self.logger.info("Process ID: {}, I Love YOU!".format(os.getpid()))
+
             # Check if DataHandler is running --> if yes, get a mareket update
             if self.data_handler.is_running:
                 self.data_handler.update_bars()  # push latest bar and put a market event into the queue
@@ -170,9 +165,11 @@ class Engine(mp.Process):
                 try:
                     event = self.event_queue.get(block=False, timeout=None)
                 except queue.Empty:
+                    # self.logger.debug("queue empty!")
                     break  # End of queue --> get more data
                 else:
                     if event is not None:
+                        # self.logger.debug("event type: " + event.type)
                         if event.type == 'MARKET':
                             self.strategy.calculate_signals(event)
                             self.portfolio.update_timeindex(event)
@@ -216,13 +213,7 @@ class Engine(mp.Process):
         """
         self.logger.info("Preparing datasets for backtesting...")
 
-        prepare_data = feeder.StockSelection.PrepareData(
-            data_folder=self.config['data']['data_folder'],
-            index_names=self.config['data']['index'],
-            symbols=self.config['data']['symbols'].split(' '),
-            start_date=self.start_date,
-            end_date=self.end_date)
-
+        prepare_data = feeder.PrepareData.PrepareData(config=self.config)
         self.symbol_list = prepare_data.get_symbol_list()
 
     def run(self):
@@ -239,6 +230,7 @@ class Engine(mp.Process):
         self.logger.info("[Status]Engine:Backtesting")
         # Display the strategy description
         self.logger.info("[Desc]{}".format(self.strategy.description))
+
         self._run_engine()
         self._output_performance()
         self.logger.info("[Status]Engine:Completed")
@@ -250,9 +242,10 @@ if __name__ == '__main__':
     from feeder.HistoricData import HistoricData as DataHandler
     from execution.SimulatedExecutionHandler import SimulatedExecutionHandler as ExecutionHandler
     from strategy.MovingAverageCrossover import MovingAverageCrossover as Strategy
-    from portfolio import Portfolio
+    from portfolio.Portfolio import Portfolio
     from logger import create_logger
     import logging.handlers
+    print(config.dt_end_date, config.dt_start_date)
     event_queue = queue.Queue()
     heartbeat = 0
     initial_capital = 100000

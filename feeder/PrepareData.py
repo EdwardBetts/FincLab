@@ -1,11 +1,9 @@
 import os
 import logging
-import datetime as dt
-import numpy as np
 import pandas as pd
 from pandas_datareader import data as pdr
 from lib.Fetch.parse_wiki_sp500_symbols import save_sp500_to_file
-import time
+from config import config
 
 logger = logging.getLogger("FincLab.PrepData")
 
@@ -22,10 +20,7 @@ class PrepareData():
         - Other index constituents
     """
 
-    def __init__(self, data_folder, index_names=None,
-                 symbols=None,
-                 start_date=dt.datetime(1990, 1, 1),
-                 end_date=None):
+    def __init__(self, config=config):
         """
         Initialises the PrepareData class
 
@@ -39,29 +34,26 @@ class PrepareData():
 
             symbols : string a list of strings, default None
                 Individual symbols
-
-            start_date : dt.datetime()
-                The start date of the dataset.
-
-            end_date : dt.datetime()
-                The end date of the dataset.
         """
-        self.data_folder = data_folder
-        if type(index_names) == str:
-            self.index_names = [index_names]
-        else:
-            self.index_names = index_names
+        self.config = config
 
-        if symbols is None:
+        # parse index names
+        index_names = self.config['data']['index']
+        if index_names.upper() == "NONE":
+            self.index_names = []
+        else:
+            self.index_names = index_names.split(' ')
+
+        symbol_list = self.config['data']['symbols']
+        if symbol_list.upper() == 'NONE':
             self.symbol_list = []
-        elif type(symbols) == str:
-            self.symbol_list = [symbols]
         else:
-            self.symbol_list = symbols
+            self.symbol_list = symbol_list.split(' ')
 
-        self.start_date = start_date
+        self.data_folder = self.config['data']['data_folder']
 
-        self.end_date = end_date
+        self.start_date = self.config.dt_start_date
+        self.end_date = self.config.dt_end_date
 
         self.symbol_data = {}  # list of dataframes
 
@@ -82,7 +74,9 @@ class PrepareData():
         """
         file_path = os.path.join(self.data_folder, symbol + ".xlsx")
         try:
-            return pd.read_excel(file_path, parse_dates=True)
+            df = pd.read_excel(file_path, parse_dates=True)
+            df['Date'] = pd.DatetimeIndex(df['Date']).tz_localize(self.config.remote_timezone)
+            return df
         except:
             self.logger.warn("Unexpected error occured when loading data {}, data will be downloaded again".format(symbol))
             return self.fetch_data(symbol)
@@ -101,7 +95,7 @@ class PrepareData():
             os.makedirs(self.data_folder)
 
         # Formulate the list of stocks based on all critiera
-        if self.index_names is not None:
+        if len(self.index_names) > 0:
             self.get_index_constituents()
 
         self.logger.info("Loading data for {} assets...".format(len(self.symbol_list)))
@@ -118,18 +112,9 @@ class PrepareData():
 
         # Check if data is outdated
         for symbol, df in self.symbol_data.items():
-            # self.logger.debug(df.tail(5))
-            last_date = df['Date'].values[-1]
+            last_date = df.ix[df.index[-1], 'Date']
 
-            if self.end_date is None:
-                # if back testing end_date is not set, default to 1week ealier.
-                end_date = dt.datetime.now()
-                end_date = np.datetime64(end_date) - np.timedelta64(1, 'W')
-            else:
-                end_date = self.end_date
-                end_date = np.datetime64(end_date)
-
-            if last_date < end_date:
+            if last_date < self.end_date:
                 self.logger.info("The data file for symbol {} is outdated, more data will be downloaded from the source.".format(symbol))
                 self.symbol_data[symbol] = self.fetch_data(symbol)
 
@@ -146,7 +131,8 @@ class PrepareData():
                             end=self.end_date,
                             retry_count=10,
                             pause=0.1)
-
+        df.reset_index(inplace=True)
+        df['Date'] = pd.DatetimeIndex(df['Date'], tz=self.config.remote_timezone)
         df.to_excel(file_path)
         return df
 
@@ -154,7 +140,7 @@ class PrepareData():
         """
         Obtain the list of constituents from the database. If database does not exist, obtain it from the source.
         """
-        folder = self.data_folder + "index_constituents"
+        folder = os.path.join(self.data_folder, "index_constituents")
 
         # Check if the default folder exists
         if not os.path.exists(folder):
@@ -180,6 +166,6 @@ if __name__ == '__main__':
     import queue
     logger = create_logger(queue.Queue())
     logger.setLevel(logging.DEBUG)
-    prepare_data = PrepareData("data/", index_names="sp500")
+    prepare_data = PrepareData()
 
 

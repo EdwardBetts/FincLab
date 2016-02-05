@@ -5,8 +5,6 @@ import queue
 import logging
 from event import MarketEvent
 from feeder.ABC import ABC as DataABC
-from dateutil import parser
-import datetime as dt
 
 
 class HistoricData(DataABC):
@@ -29,6 +27,7 @@ class HistoricData(DataABC):
         """
         self.event_queue = event_queue
         self.config = config
+
         self.symbol_list = symbol_list
 
         self.symbol_data = {}
@@ -38,13 +37,8 @@ class HistoricData(DataABC):
         self.data_folder = self.config['data']['data_folder']
 
         # Parse dates
-        self.start_date = parser.parse(self.config['data']['start_date'])
-        end_date = self.config['data']['end_date']
-        if end_date.upper() == "NONE":
-            dt_now = dt.datetime.now()
-            self.end_date = dt.datetime(dt_now.year, dt_now.month, dt_now.day)
-        else:
-            self.end_date = parser.parse(self.end_date)
+        self.start_date = self.config.dt_start_date
+        self.end_date = self.config.dt_end_date
 
         self.logger = logging.getLogger("FincLab.HistData")
         self.logger.propagate = True
@@ -59,7 +53,7 @@ class HistoricData(DataABC):
             header=0,
             index_col=0,
             parse_dates=True,
-            names=['datetime', 'open', 'high', 'low', 'close', 'volume', 'adj_close']
+            names=['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Adj Close']
         ).sort_index()
 
     def _load_data_excel(self, symbol, file_path):
@@ -69,8 +63,7 @@ class HistoricData(DataABC):
             file_path,
             header=0,
             index_col=0,
-            parse_dates=True,
-            names=['datetime', 'open', 'high', 'low', 'close', 'volume', 'adj_close']
+            parse_dates=True
         ).sort_index()
 
     def _load_data_stata(self, symbol, file_path):
@@ -80,8 +73,7 @@ class HistoricData(DataABC):
             file_path,
             header=0,
             index_col=0,
-            parse_dates=True,
-            names=['datetime', 'open', 'high', 'low', 'close', 'volume', 'adj_close']
+            parse_dates=True
         ).sort_index()
 
     def _load_data_files(self):
@@ -109,17 +101,20 @@ class HistoricData(DataABC):
 
             # Combine the index and pad forward the values
             if comb_index is None:
-                comb_index = self.symbol_data[symbol].index
+                comb_index = self.symbol_data[symbol]['Date']
             else:
-                comb_index.union(self.symbol_data[symbol].index)
+                comb_index = pd.DatetimeIndex.union(self.symbol_data[symbol]['Date'])
 
-        # Update the max observation number
-            self.first_obs = comb_index[0]
-            self.last_obs = comb_index[-1]
+            # Update the max observation number
+            self.first_obs = comb_index.iloc[0]
+            self.last_obs = comb_index.iloc[-1]
 
         # Reindex all dataframes
         for symbol in self.symbol_list:
-            df = self.symbol_data[symbol].reindex(index=comb_index, method='ffill')
+            df = self.symbol_data[symbol]
+            df.index = df['Date']
+            df.drop('Date', axis=1, inplace=True)
+            df.reindex(index=comb_index, method='ffill')
             self.symbol_data[symbol] = df.iterrows()
 
     def _get_new_bar(self, symbol):

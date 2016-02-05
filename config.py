@@ -1,3 +1,8 @@
+import configparser
+import os.path
+import datetime as dt
+import pandas as pd
+
 """
 Class : Config
 
@@ -26,9 +31,6 @@ Notes
     and make sure do not overwrite default methods while creating new ones.
 """
 
-import configparser
-import os.path
-
 
 class Configuration(configparser.ConfigParser):
     """
@@ -41,6 +43,8 @@ class Configuration(configparser.ConfigParser):
 
         Parameters
         ----------
+            config_folder : string, default ''
+                Folder to the config file.
             config_file : string, default 'config.ini'
                 Full path to the config file or simply the filename if located in the home folder of the app.
         """
@@ -48,6 +52,23 @@ class Configuration(configparser.ConfigParser):
         self.config_file = os.path.join(config_folder, config_file)
 
         self.load()  # Load settings
+
+        # Parse dates
+        self.remote_timezone = self['general']['remote_timezone']
+        self.local_timezone = self['general']['local_timezone']
+
+        start_date = self['data']['start_date'] + ' 00:00:00'
+        self.dt_start_date = pd.Timestamp(start_date, tz=self.remote_timezone)
+
+        # Simply get the last business day on or before the current day
+        end_date = self['data']['end_date']
+        if end_date.upper() == "NONE":
+            self.dt_end_date = pd.Timestamp(dt.datetime.now(), tz=self.local_timezone)
+            self.dt_end_date = self.dt_end_date.tz_convert(self.remote_timezone)
+        else:
+            end_date = self['data']['end_date'] + ' 18:00:00'
+            self.dt_end_date = pd.Timestamp(end_date, tz=self.remote_timezone)
+        self.dt_end_date -= 3 * pd.tseries.offsets.BDay()
 
     def load(self):
         """
@@ -86,9 +107,12 @@ config = Configuration()
 
 if __name__ == '__main__':
     print("debugging...")
-    config = Configuration()
-    config.reset_to_defaults()
+    # config = Configuration()
+    # config.reset_to_defaults()
     print(config.sections())
     print(config["notes"]["Author"])
-    config.save()
+    # config.save()
+    print("UTC", config.remote_timezone)
+    print("Start date: ", config.dt_start_date)
+    print("End date: ", config.dt_end_date)
 

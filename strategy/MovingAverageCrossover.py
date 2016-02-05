@@ -79,7 +79,7 @@ class MovingAverageCrossover(StrategyABC):
         if event.type == "MARKET":
             for symbol in self.symbol_list:
                 bars = self.bars.get_latest_bars_values(
-                    symbol, "adj_close", periods=self.long_window
+                    symbol, "Adj Close", periods=self.long_window
                 )
                 bar_date = self.bars.get_latest_bar_datetime(symbol)
 
@@ -91,7 +91,7 @@ class MovingAverageCrossover(StrategyABC):
                     signal_dir = ""
 
                     if short_sma > long_sma and self.bought[symbol] == "OUT":
-                        self.logger.info("Long: {}".format(bar_date))
+                        self.logger.info("Long {}: {}".format(symbol, bar_date))
                         signal_dir = "LONG"
                         signal_event = SignalEvent(
                             strategy_id=1,
@@ -103,7 +103,7 @@ class MovingAverageCrossover(StrategyABC):
                         self.event_queue.put(signal_event)
                         self.bought[symbol] = 'LONG'
                     elif short_sma < long_sma and self.bought[symbol] == "LONG":
-                        self.logger.info("SHORT: {}".format(bar_date))
+                        self.logger.info("SHORT {}: {}".format(symbol, bar_date))
                         signal_dir = "EXIT"
                         signal_event = SignalEvent(
                             strategy_id=1,
