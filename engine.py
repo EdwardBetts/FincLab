@@ -110,9 +110,9 @@ class Engine(mp.Process):
         self.logger.info("    data handler, strategy, portfolio and execution handler...")
 
         self.data_handler = self.data_handler_cls(
+            config=self.config,
             event_queue=self.event_queue,
             symbol_list=self.symbol_list,
-            data_folder=self.config['data']['data_folder']
         )
 
         self.strategy = self.strategy_cls(

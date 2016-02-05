@@ -4,6 +4,8 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 from pandas_datareader import data as pdr
+from lib.Fetch.parse_wiki_sp500_symbols import save_sp500_to_file
+import time
 
 logger = logging.getLogger("FincLab.PrepData")
 
@@ -94,6 +96,10 @@ class PrepareData():
             2. If data is outdated, update the data
         """
 
+        # Create dirs
+        if not os.path.exists(self.data_folder):
+            os.makedirs(self.data_folder)
+
         # Formulate the list of stocks based on all critiera
         if self.index_names is not None:
             self.get_index_constituents()
@@ -105,7 +111,7 @@ class PrepareData():
             file_path = os.path.join(self.data_folder, symbol + ".xlsx")
             self.logger.info("[Progress]{},{}".format(i, len(self.symbol_list)))
             if not os.path.exists(file_path):
-                self.logger.info("Data for symbol {} does not exist and will downloaded from source.".format(symbol))
+                self.logger.info("Data for symbol {} does not exist and is downloaded from source ({} out of {}).".format(symbol, i, len(self.symbol_list)))
                 self.symbol_data[symbol] = self.fetch_data(symbol)
             else:
                 self.symbol_data[symbol] = self.load_data(symbol)
@@ -148,17 +154,22 @@ class PrepareData():
         """
         Obtain the list of constituents from the database. If database does not exist, obtain it from the source.
         """
-        # Check if database exists
         folder = self.data_folder + "index_constituents"
+
+        # Check if the default folder exists
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+
         for index in self.index_names:
             file_path = os.path.join(folder, index + ".xlsx")
 
-            if os.path.exists(file_path):
+            # Check if datafile exists
+            if not os.path.exists(file_path):
+                save_sp500_to_file(folder)
 
-                self.logger.info("Retreiving the list of constituents for index {}.".format(index))
-
-                df = pd.read_excel(file_path, parse_dates=True)
-                self.symbol_list += list(df['ticker'].values)
+            self.logger.info("Retreiving the list of constituents for index {}.".format(index))
+            df = pd.read_excel(file_path, parse_dates=True)
+            self.symbol_list += list(df['ticker'].values)
 
         # Remove duplicate tickers from the list
         self.symbol_list = list(set(self.symbol_list))

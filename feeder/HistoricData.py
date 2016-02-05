@@ -5,6 +5,8 @@ import queue
 import logging
 from event import MarketEvent
 from feeder.ABC import ABC as DataABC
+from dateutil import parser
+import datetime as dt
 
 
 class HistoricData(DataABC):
@@ -13,7 +15,7 @@ class HistoricData(DataABC):
     Assume that the data is taken from Yahoo, and its format will be respected.
     """
 
-    def __init__(self, event_queue, symbol_list, data_folder="/Users/peter/Work/FinanceData/Stock/US/"):
+    def __init__(self, config, event_queue, symbol_list):
         """
         Initialises by requesting the event queue, location of the data files and a list of symbols.
 
@@ -26,12 +28,23 @@ class HistoricData(DataABC):
         symbol_list : A list of symbol strings
         """
         self.event_queue = event_queue
-        self.data_folder = data_folder
+        self.config = config
         self.symbol_list = symbol_list
 
         self.symbol_data = {}
         self.latest_symbol_data = {}
         self.is_running = True
+
+        self.data_folder = self.config['data']['data_folder']
+
+        # Parse dates
+        self.start_date = parser.parse(self.config['data']['start_date'])
+        end_date = self.config['data']['end_date']
+        if end_date.upper() == "NONE":
+            dt_now = dt.datetime.now()
+            self.end_date = dt.datetime(dt_now.year, dt_now.month, dt_now.day)
+        else:
+            self.end_date = parser.parse(self.end_date)
 
         self.logger = logging.getLogger("FincLab.HistData")
         self.logger.propagate = True
@@ -78,8 +91,10 @@ class HistoricData(DataABC):
         Assume that the data is taken from Yahoo, and its format will be respected.
         """
         comb_index = None
+
         # Load symbol data and re-construct index
         for symbol in self.symbol_list:
+            self.logger.debug("[Status]loading_data:{}".format(symbol))
             if os.path.exists(os.path.join(self.data_folder, "{}.xlsx".format(symbol))):
                 self._load_data_excel(symbol, os.path.join(self.data_folder, "{}.xlsx".format(symbol)))
             if os.path.exists(os.path.join(self.data_folder, "{}.xls".format(symbol))):

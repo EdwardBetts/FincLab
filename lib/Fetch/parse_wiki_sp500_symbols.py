@@ -26,6 +26,7 @@ import logging
 
 logger = logging.getLogger("FincLab.Parse.Wiki_SP500")
 
+
 ##
 def parse_wiki_sp500():
     """
@@ -41,7 +42,7 @@ def parse_wiki_sp500():
 
     # Use requests and BS4 to download / obtain the symbol table
     response = requests.get(url)
-    soup = bs4.BeautifulSoup(response.text, "lxml")
+    soup = bs4.BeautifulSoup(response.text)
 
     # This selects the first table, using CSS Selector syntax and then ignores the header row ([1:])
     symbol_list = soup.select('table')[0].select('tr')[1:]
@@ -62,6 +63,7 @@ def parse_wiki_sp500():
 
     return symbols
 ##
+
 
 def save_sp500_to_sql(data):
     """
@@ -90,6 +92,7 @@ def save_sp500_to_sql(data):
         cursor.close()
         conn.close()
 
+
 def save_sp500_to_file(data_folder):
     """ Save the list of S&P500 companies to a spreadsheet (.xlsx)
 
@@ -109,13 +112,13 @@ def save_sp500_to_file(data_folder):
 
     df = pd.DataFrame(symbols, columns=['ticker', 'instrument', 'name', 'sector', 'currency', 'created_date', 'last_updated_date'])
 
-    logger.info("The first 20 of the stocks are: {}".format(df[['ticker', 'name']].head(20)))
+    # logger.info("The first 20 of the stocks are: {}".format(df[['ticker', 'name']].head(20)))
 
     # Check if the default folder exists
     if not os.path.exists(data_folder):
         os.makedirs(data_folder)
 
-    df.to_excel(data_folder + "sp500.xlsx")
+    df.to_excel(os.path.join(data_folder, "sp500.xlsx"))
 
 
 if __name__ == "__main__":
