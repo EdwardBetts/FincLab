@@ -275,9 +275,9 @@ class EqualWeightedPortfolio(Portfolio):
         drawdown, max_dd, dd_duration = create_drawdowns(pnl)
         self.equity_curve['drawdown'] = drawdown
 
-        stats = [("Total Return: {:.2f}%".format((total_return - 1) * 100)),
+        stats = [("Total Return: {:.2%}".format((total_return - 1))),
                  ("Sharpe Ratio: {:.2f} ".format(sharpe_ratio)),
-                 ("Max Drawdown: {:.2f}%".format(max_dd * 100)),
+                 ("Max Drawdown: {:.2%}".format(max_dd)),
                  ("Drawdown Duration: {:.2f}".format(dd_duration))]
         # self.equity_curve.to_csv("equity.csv")
         return stats
